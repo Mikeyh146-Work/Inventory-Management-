@@ -1,26 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <script type="module">
+        // Firebase imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadInventory() {
+            const inventoryCollection = collection(db, "inventory");
+            const inventorySnapshot = await getDocs(inventoryCollection);
+            const inventoryData = inventorySnapshot.docs.map(doc => doc.data());
+
+            const bikesList = document.getElementById("bikes-list");
+            const ebikesList = document.getElementById("ebikes-list");
+            const x4List = document.getElementById("x4-list");
+            const buggiesList = document.getElementById("buggies-list");
+
+            inventoryData.forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${item.name} - Qty: ${item.quantity}`;
+
+                switch (item.category) {
+                    case "Bikes":
+                        bikesList.appendChild(listItem);
+                        break;
+                    case "E-Bikes":
+                        ebikesList.appendChild(listItem);
+                        break;
+                    case "4x4":
+                        x4List.appendChild(listItem);
+                        break;
+                    case "Buggies":
+                        buggiesList.appendChild(listItem);
+                        break;
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", loadInventory);
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .category {
+            margin-bottom: 20px;
+        }
+
+        .category h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .category ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .category li {
+            background: #007BFF;
+            color: white;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>Inventory</h1>
-  </header>
+    <h1>Inventory Management</h1>
 
-  <main>
-    <div id="inventory-list">
-      <!-- Inventory items will populate here -->
+    <div class="category">
+        <h2>Bikes</h2>
+        <ul id="bikes-list"></ul>
     </div>
-  </main>
 
-  <script>
-    // Placeholder for fetching inventory data from Firestore
-    const inventoryList = document.getElementById("inventory-list");
-    inventoryList.innerHTML = "<p>Loading inventory...</p>";
-  </script>
+    <div class="category">
+        <h2>E-Bikes</h2>
+        <ul id="ebikes-list"></ul>
+    </div>
+
+    <div class="category">
+        <h2>4x4</h2>
+        <ul id="x4-list"></ul>
+    </div>
+
+    <div class="category">
+        <h2>Buggies</h2>
+        <ul id="buggies-list"></ul>
+    </div>
 </body>
 </html>
