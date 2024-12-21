@@ -1,87 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Brian</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brian - Inventory Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            background-color: #007BFF;
+            color: #fff;
+            padding: 0.8rem 1.5rem;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .nav-links a:hover {
+            background-color: #0056b3;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .nav-links a {
+                font-size: 0.9rem;
+                padding: 0.7rem 1.2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-box">
-      <h1>Welcome to Brian</h1>
-      <form id="login-form">
-        <div class="input-group">
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required>
-        </div>
+    <h1>Welcome to Brian</h1>
+    <p>Your ultimate inventory management system</p>
 
-        <div class="input-group">
-          <label for="password">Password:</label>
-          <input type="password" id="password" name="password" required>
-        </div>
-
-        <button type="submit">Login</button>
-      </form>
-
-      <div class="forgot-password">
-        <a href="#" id="forgot-password-link">Forgot Password?</a>
-      </div>
+    <div class="nav-links">
+        <a href="inventory.html">Inventory</a>
+        <a href="reports.html">Reports</a>
+        <a href="users.html">Users</a>
+        <a href="settings.html">Settings</a>
+        <a href="help.html">Help</a>
     </div>
-  </div>
-
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-      authDomain: "brian-inventory-management.firebaseapp.com",
-      projectId: "brian-inventory-management",
-      storageBucket: "brian-inventory-management.firebasestorage.app",
-      messagingSenderId: "276972422558",
-      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-      measurementId: "G-HW9K6R9WKM"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    const loginForm = document.getElementById("login-form");
-    const forgotPasswordLink = document.getElementById("forgot-password-link");
-
-    loginForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          window.location.href = "landing.html";
-        })
-        .catch((error) => {
-          const errorMessage = error.message;
-          alert(`Error: ${errorMessage}`);
-        });
-    });
-
-    forgotPasswordLink.addEventListener("click", (e) => {
-      e.preventDefault();
-      const email = prompt("Please enter your email address:");
-      if (email) {
-        auth.sendPasswordResetEmail(email)
-          .then(() => {
-            alert("Password reset email sent! Please check your inbox.");
-          })
-          .catch((error) => {
-            const errorMessage = error.message;
-            alert(`Error: ${errorMessage}`);
-          });
-      }
-    });
-  </script>
 </body>
 </html>
