@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #28a745;
+            padding: 10px 0;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="#" onclick="navigate('home')">Home</a>
+    <a href="#" onclick="navigate('repairs')">Repairs</a>
+    <a href="#" onclick="navigate('stock-control')">Stock Control</a>
+    <a href="#" onclick="navigate('inventory')">Inventory</a>
+</nav>
+
+<div class="container" id="content"></div>
+
+<script>
+    // Local storage for inventory and repairs
+    const inventory = JSON.parse(localStorage.getItem('inventory')) || [];
+    const repairLogs = JSON.parse(localStorage.getItem('repairLogs')) || [];
+
+    function saveToLocalStorage() {
+        localStorage.setItem('inventory', JSON.stringify(inventory));
+        localStorage.setItem('repairLogs', JSON.stringify(repairLogs));
+    }
+
+    function navigate(page) {
+        const content = document.getElementById('content');
+
+        if (page === 'home') {
+            content.innerHTML = `
+                <h1>Welcome</h1>
+                <p>Select an option:</p>
+                <button onclick=\"navigate('repairs')\">Repairs</button>
+                <button onclick=\"navigate('stock-control')\">Stock Control</button>
+                <button onclick=\"navigate('inventory')\">Inventory</button>
+            `;
+        } else if (page === 'repairs') {
+            content.innerHTML = `
+                <h2>Log a Repair</h2>
+                <div class="form-group">
+                    <label for="repair-category">What did you repair?</label>
+                    <select id="repair-category" onchange="populatePartsDropdown()">
+                        <option value="">Select</option>
+                        <option value="Bike">Bike</option>
+                        <option value="Buggy">Buggy</option>
+                        <option value="E-bike">E-bike</option>
+                        <option value="4X4">4X4</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="repair-part">What parts did you use?</label>
+                    <select id="repair-part"></select>
+                </div>
+                <div class="form-group">
+                    <label for="repair-quantity">Quantity</label>
+                    <input type="number" id="repair-quantity">
+                </div>
+                <button onclick="logRepair()">Submit</button>
+            `;
+        } else if (page === 'stock-control') {
+            content.innerHTML = `
+                <h2>Stock Control</h2>
+                <h3>Add Stock</h3>
+                <div class="form-group">
+                    <label for="stock-item">Select Item</label>
+                    <select id="stock-item"></select>
+                </div>
+                <div class="form-group">
+                    <label for="stock-quantity">Quantity to Add</label>
+                    <input type="number" id="stock-quantity">
+                </div>
+                <button onclick="addStock()">Add Stock</button>
+                <hr>
+                <h3>Create New Inventory Line</h3>
+                <div class="form-group">
+                    <label for="new-item-name">Item Name</label>
+                    <input type="text" id="new-item-name">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-category">Category</label>
+                    <input type="text" id="new-item-category">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-quantity">Initial Quantity</label>
+                    <input type="number" id="new-item-quantity">
+                </div>
+                <button onclick="createNewItem()">Create Item</button>
+            `;
+            populateDropdown('stock-item');
+        } else if (page === 'inventory') {
+            let tableRows = inventory.map(item => `<tr><td>${item.name}</td><td>${item.category}</td><td>${item.quantity}</td></tr>`).join('');
+            content.innerHTML = `
+                <h2>Inventory</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows || '<tr><td colspan="3">No items found</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+        }
+    }
+
+    function populatePartsDropdown() {
+        const category = document.getElementById('repair-category').value;
+        const partsDropdown = document.getElementById('repair-part');
+
+        partsDropdown.innerHTML = '<option value="">Select</option>';
+        inventory.filter(item => item.category === category).forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.name;
+            option.textContent = `${item.name} (${item.quantity} available)`;
+            partsDropdown.appendChild(option);
+        });
+    }
+
+    function logRepair() {
+        const category = document.getElementById('repair-category').value;
+        const part = document.getElementById('repair-part').value;
+        const quantity = parseInt(document.getElementById('repair-quantity').value);
+
+        if (category && part && quantity > 0) {
+            repairLogs.push({ category, part, quantity });
+            const inventoryItem = inventory.find(item => item.name === part);
+            if (inventoryItem) inventoryItem.quantity -= quantity;
+            saveToLocalStorage();
+            alert('Repair logged successfully!');
+        } else {
+            alert('Please fill in all fields correctly.');
+        }
+    }
+
+    function addStock() {
+        const selectedItem = document.getElementById('stock-item').value;
+        const quantity = parseInt(document.getElementById('stock-quantity').value);
+
+        if (selectedItem && quantity > 0) {
+            inventory[selectedItem].quantity += quantity;
+            saveToLocalStorage();
+            alert('Stock updated successfully!');
+        } else {
+            alert('Please select an item and enter a valid quantity.');
+        }
+    }
+
+    function createNewItem() {
+        const name = document.getElementById('new-item-name').value;
+        const category = document.getElementById('new-item-category').value;
+        const quantity = parseInt(document.getElementById
+                                       ('new-item-quantity').value);
+
+        if (name && category && quantity >= 0) {
+            // Check if item already exists
+            const existingItem = inventory.find(item => item.name === name);
+            if (existingItem) {
+                alert('An item with this name already exists.');
+                return;
+            }
+
+            // Add new item to inventory
+            inventory.push({ name, category, quantity });
+            saveToLocalStorage();
+            alert('New item added successfully!');
+            document.getElementById('new-item-name').value = '';
+            document.getElementById('new-item-category').value = '';
+            document.getElementById('new-item-quantity').value = '';
+            populateDropdown('stock-item'); // Update dropdowns
+        } else {
+            alert('Please fill in all fields correctly.');
+        }
+    }
+
+    function populateDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        dropdown.innerHTML = '<option value="">Select</option>';
+        inventory.forEach((item, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${item.name} (${item.quantity} available)`;
+            dropdown.appendChild(option);
+        });
+    }
+
+    // Initialize application
+    navigate('home');
+</script>
+
+</body>
+</html>
+   
+                               
