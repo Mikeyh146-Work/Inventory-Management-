@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Repairs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Repairs</h1>
+  </header>
+
+  <main>
+    <form id="repairs-form">
+      <label for="repair-type">What did you repair?</label>
+      <select id="repair-type" name="repair-type" required>
+        <option value="bike">Bike</option>
+        <option value="buggy">Buggy</option>
+        <option value="e-bike">E-Bike</option>
+        <option value="4x4">4X4</option>
+      </select>
+
+      <label for="parts-used">What parts did you use?</label>
+      <select id="parts-used" name="parts-used" required>
+        <!-- Options will dynamically populate -->
+      </select>
+
+      <label for="quantity">Quantity:</label>
+      <input type="number" id="quantity" name="quantity" required>
+
+      <button type="submit">Submit</button>
+    </form>
+  </main>
+
+  <script>
+    const partsUsed = document.getElementById("parts-used");
+    const repairType = document.getElementById("repair-type");
+
+    // Dynamically populate parts based on repair type
+    repairType.addEventListener("change", () => {
+      partsUsed.innerHTML = ""; // Clear previous options
+      const parts = {
+        bike: ["Chain", "Brake Pads", "Handlebars"],
+        buggy: ["Tire", "Axle", "Engine"],
+        "e-bike": ["Battery", "Charger", "Motor"],
+        "4x4": ["Transmission", "Suspension", "Gearbox"],
+      };
+
+      const selectedType = repairType.value;
+      parts[selectedType].forEach((part) => {
+        const option = document.createElement("option");
+        option.value = part.toLowerCase();
+        option.textContent = part;
+        partsUsed.appendChild(option);
+      });
+    });
+  </script>
+</body>
+</html>
