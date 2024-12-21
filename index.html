@@ -22,6 +22,11 @@
 
       <button type="submit">Login</button>
     </form>
+
+    <!-- Forgot Password Link -->
+    <div>
+      <a href="#" id="forgot-password-link">Forgot Password?</a>
+    </div>
   </div>
 
   <script>
@@ -41,10 +46,12 @@
     const auth = firebase.auth();
 
     const loginForm = document.getElementById("login-form");
+    const forgotPasswordLink = document.getElementById("forgot-password-link");
+
+    // Handle login form submission
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      // Get user input
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
@@ -55,10 +62,27 @@
           window.location.href = "landing.html";
         })
         .catch((error) => {
-          const errorCode = error.code;
           const errorMessage = error.message;
           alert(`Error: ${errorMessage}`);
         });
+    });
+
+    // Handle "Forgot Password?" link
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault(); // Prevent the default link behavior
+
+      const email = prompt("Please enter your email address:");
+
+      if (email) {
+        auth.sendPasswordResetEmail(email)
+          .then(() => {
+            alert("Password reset email sent! Please check your inbox.");
+          })
+          .catch((error) => {
+            const errorMessage = error.message;
+            alert(`Error: ${errorMessage}`);
+          });
+      }
     });
   </script>
 </body>
