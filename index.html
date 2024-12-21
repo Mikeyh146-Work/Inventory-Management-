@@ -41,9 +41,12 @@
       measurementId: "G-HW9K6R9WKM"
     };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
+    // Initialize Firebase (Using the modular SDK)
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     const loginForm = document.getElementById("login-form");
     const forgotPasswordLink = document.getElementById("forgot-password-link");
@@ -56,7 +59,7 @@
       const password = document.getElementById("password").value;
 
       // Sign in with Firebase Authentication
-      auth.signInWithEmailAndPassword(email, password)
+      signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           // Redirect to the landing page on successful login
           window.location.href = "landing.html";
@@ -74,7 +77,7 @@
       const email = prompt("Please enter your email address:");
 
       if (email) {
-        auth.sendPasswordResetEmail(email)
+        sendPasswordResetEmail(auth, email)
           .then(() => {
             alert("Password reset email sent! Please check your inbox.");
           })
