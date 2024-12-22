@@ -6,10 +6,6 @@
   <title>Stock Control</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase SDK (If needed for other features) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-
   <!-- Google API -->
   <script src="https://apis.google.com/js/api.js"></script>
 </head>
@@ -83,8 +79,7 @@
       if (category && itemName && openingStock) {
         addNewItem(category, itemName, openingStock);
       } else {
-        document.getElementById("message").textContent = "All fields are required!";
-        document.getElementById("message").style.color = "red";
+        displayMessage("All fields are required!", "red");
       }
     });
 
@@ -109,27 +104,33 @@
 
         // Append the new item data to the sheet
         const appendRange = `Sheet1!A${nextRow}:C${nextRow}`;
-        gapi.client.sheets.spreadsheets.values.update({
+        gapi.client.sheets.spreadsheets.values.append({
           spreadsheetId: spreadsheetId,
           range: appendRange,
           valueInputOption: "RAW",
           values: [newRow]
         }).then(function() {
-          document.getElementById("message").textContent = "Item added successfully!";
-          document.getElementById("message").style.color = "green";
+          displayMessage("Item added successfully!", "green");
 
-          // Clear form fields
+          // Clear form fields after submission
           document.getElementById("category").value = "";
           document.getElementById("item-name").value = "";
           document.getElementById("opening-stock").value = "";
         }).catch(function(error) {
-          document.getElementById("message").textContent = "Error adding item!";
-          document.getElementById("message").style.color = "red";
+          displayMessage("Error adding item to sheet!", "red");
           console.log("Error adding item:", error);
         });
       }).catch(function(error) {
+        displayMessage("Error reading data from sheet!", "red");
         console.log("Error reading data from sheet:", error);
       });
+    }
+
+    // Function to display success or error message
+    function displayMessage(message, color) {
+      const messageElement = document.getElementById("message");
+      messageElement.textContent = message;
+      messageElement.style.color = color;
     }
   </script>
 </body>
