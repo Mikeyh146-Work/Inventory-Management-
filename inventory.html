@@ -30,64 +30,68 @@
   </main>
 
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-      authDomain: "brian-inventory-management.firebaseapp.com",
-      projectId: "brian-inventory-management",
-      storageBucket: "brian-inventory-management.firebasestorage.app",
-      messagingSenderId: "276972422558",
-      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-      measurementId: "G-HW9K6R9WKM",
-    };
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
+    authDomain: "brian-inventory-management.firebaseapp.com",
+    projectId: "brian-inventory-management",
+    storageBucket: "brian-inventory-management.firebasestorage.app",
+    messagingSenderId: "276972422558",
+    appId: "1:276972422558:web:c1ef8577015f3a9097428f",
+    measurementId: "G-HW9K6R9WKM",
+  };
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(app);
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore(app);
 
-    // Reference the inventory collection
-    const inventoryRef = db.collection("inventory");
+  // Reference the inventory collection
+  const inventoryRef = db.collection("inventory");
 
-    // Function to display inventory data
-    function displayInventory() {
-      inventoryRef.get()
-        .then((querySnapshot) => {
-          console.log('Firestore data:', querySnapshot); // Debugging: log the querySnapshot
+  // Function to display inventory data
+  function displayInventory() {
+    console.log("Fetching inventory data...");
 
-          const inventoryList = document.getElementById("inventory-list");
-          inventoryList.innerHTML = ""; // Clear existing content
+    inventoryRef.get()
+      .then((querySnapshot) => {
+        console.log("Firestore data retrieved: ", querySnapshot.empty ? "No data found" : "Data found"); // Check if data is empty
 
-          if (querySnapshot.empty) {
-            inventoryList.innerHTML = "<p>No inventory data found.</p>";
-          } else {
-            querySnapshot.forEach((doc) => {
-              const data = doc.data(); // Get fields (items and quantities)
-              const category = doc.id; // Get document ID (e.g., Mountain Bike)
-              const categoryDiv = document.createElement("div");
+        const inventoryList = document.getElementById("inventory-list");
+        inventoryList.innerHTML = ""; // Clear existing content
 
-              // Log the category and data to ensure they are fetched correctly
-              console.log('Category:', category, 'Data:', data);
+        if (querySnapshot.empty) {
+          inventoryList.innerHTML = "<p>No inventory data found.</p>";
+        } else {
+          querySnapshot.forEach((doc) => {
+            const data = doc.data(); // Get fields (items and quantities)
+            const category = doc.id; // Get document ID (e.g., Mountain Bike)
+            const categoryDiv = document.createElement("div");
 
-              // Generate HTML for this category using template literals
-              let categoryHtml = `<h2>${category}</h2><ul>`;
-              for (const [item, qty] of Object.entries(data)) {
-                categoryHtml += `<li>${item}: ${qty}</li>`;
-              }
-              categoryHtml += "</ul>";
+            console.log('Category:', category, 'Data:', data); // Debugging: log category and data
 
-              // Append the category to the page
-              categoryDiv.innerHTML = categoryHtml;
-              inventoryList.appendChild(categoryDiv);
-            });
-          }
-        })
-        .catch((error) => {
-          console.error("Error retrieving inventory: ", error);
-        });
-    }
+            // Generate HTML for this category using template literals
+            let categoryHtml = `<h2>${category}</h2><ul>`;
+            for (const [item, qty] of Object.entries(data)) {
+              // Add each item and its quantity
+              categoryHtml += `<li>${item}: ${qty}</li>`;
+            }
+            categoryHtml += "</ul>";
 
-    // Call the function on page load
-    displayInventory();
-  </script>
+            // Append the category to the page
+            categoryDiv.innerHTML = categoryHtml;
+            inventoryList.appendChild(categoryDiv);
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Error retrieving inventory: ", error);
+      });
+  }
+
+  // Call the function on page load
+  displayInventory();
+</script>
+
+ 
 </body>
 </html>
