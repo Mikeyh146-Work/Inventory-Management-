@@ -29,26 +29,22 @@ h2 {
   color: #333;
 }
 
-.form-section {
-  margin-bottom: 20px;
+.inventory-list {
+  margin-top: 20px;
 }
 
-label {
-  display: block;
+.inventory-item {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.inventory-item p {
   margin: 5px 0;
 }
 
-select, input {
-  padding: 8px;
-  font-size: 16px;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-input[type="number"] {
-  width: auto;
-}
-
-hr {
-  margin: 40px 0;
+.inventory-item p strong {
+  font-weight: bold;
 }
