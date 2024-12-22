@@ -1,135 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Control</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module">
-        // Firebase imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Load inventory items for dropdown
-        async function loadInventoryDropdown() {
-            const inventoryCollection = collection(db, "inventory");
-            const inventorySnapshot = await getDocs(inventoryCollection);
-            const inventoryData = inventorySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            const inventoryDropdown = document.getElementById("inventory-dropdown");
-
-            inventoryData.forEach(item => {
-                const option = document.createElement("option");
-                option.value = item.id;
-                option.textContent = item.name;
-                inventoryDropdown.appendChild(option);
-            });
-        }
-
-        // Add stock to existing item
-        async function addStock() {
-            const selectedItem = document.getElementById("inventory-dropdown").value;
-            const addQuantity = parseInt(document.getElementById("add-quantity").value);
-
-            if (!selectedItem || isNaN(addQuantity) || addQuantity <= 0) {
-                alert("Please select an item and enter a valid quantity.");
-                return;
-            }
-
-            const itemRef = doc(db, "inventory", selectedItem);
-
-            try {
-                const currentDoc = await getDocs(collection(db, "inventory"));
-                const currentData = currentDoc.docs.find(doc => doc.id === selectedItem).data();
-                const newQuantity = (currentData.quantity || 0) + addQuantity;
-                await updateDoc(itemRef, { quantity: newQuantity });
-                alert("Stock updated successfully!");
-                document.getElementById("add-quantity").value = "";
-            } catch (error) {
-                console.error("Error updating stock:", error);
-                alert("Error updating stock. Please try again.");
-            }
-        }
-
-        // Create new stock item
-        async function createNewItem() {
-            const category = document.getElementById("new-item-category").value;
-            const name = document.getElementById("new-item-name").value.trim();
-            const openingStock = parseInt(document.getElementById("new-item-quantity").value);
-
-            if (!category || !name || isNaN(openingStock) || openingStock < 0) {
-                alert("Please fill out all fields correctly.");
-                return;
-            }
-
-            try {
-                const newItemRef = doc(collection(db, "inventory"));
-                await setDoc(newItemRef, { category, name, quantity: openingStock });
-                alert("New stock item created successfully!");
-                document.getElementById("new-item-category").value = "";
-                document.getElementById("new-item-name").value = "";
-                document.getElementById("new-item-quantity").value = "";
-            } catch (error) {
-                console.error("Error creating new stock item:", error);
-                alert("Error creating new stock item. Please try again.");
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", loadInventoryDropdown);
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Control</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-firestore.js"></script>
 </head>
 <body>
-    <h1>Stock Control</h1>
 
-    <a href="index.html" class="home-button">Home</a>
+  <!-- Home Button -->
+  <button id="homeButton" onclick="window.location.href='index.html'">Home</button>
 
-    <div class="section">
-        <h2>Add Stock</h2>
-        <form onsubmit="event.preventDefault(); addStock();">
-            <label for="inventory-dropdown">Select Item:</label>
-            <select id="inventory-dropdown">
-                <option value="">-- Select an item --</option>
-            </select>
+  <div class="stock-control">
+    
+    <!-- Add Stock Quantity Section -->
+    <h2>Add Stock Quantity</h2>
+    <form id="addStockForm">
+      <div class="form-section">
+        <label for="category">Category:</label>
+        <select id="category">
+          <option value="mountain-bike">Mountain Bike</option>
+          <!-- Add other categories dynamically here -->
+        </select>
 
-            <label for="add-quantity">Quantity to Add:</label>
-            <input type="number" id="add-quantity" placeholder="Enter quantity">
+        <label for="part">Part:</label>
+        <select id="part">
+          <!-- Parts list will be populated based on category -->
+        </select>
 
-            <button type="submit">Add Stock</button>
-        </form>
-    </div>
+        <label for="quantity">Quantity to Add:</label>
+        <input type="number" id="quantity" min="1" required>
 
-    <div class="section">
-        <h2>Create New Stock Item</h2>
-        <form onsubmit="event.preventDefault(); createNewItem();">
-            <label for="new-item-category">Category:</label>
-            <select id="new-item-category">
-                <option value="">-- Select a category --</option>
-                <option value="Bikes">Bikes</option>
-                <option value="E-Bikes">E-Bikes</option>
-                <option value="4x4">4x4</option>
-                <option value="Buggies">Buggies</option>
-            </select>
+        <button type="submit" id="addStockBtn">Add Stock</button>
+      </div>
+    </form>
 
-            <label for="new-item-name">Item Name:</label>
-            <input type="text" id="new-item-name" placeholder="Enter item name">
+    <hr>
 
-            <label for="new-item-quantity">Opening Stock Quantity:</label>
-            <input type="number" id="new-item-quantity" placeholder="Enter opening stock quantity">
+    <!-- Add New Stock Item Section -->
+    <h2>Add New Stock Item</h2>
+    <form id="newItemForm">
+      <div class="form-section">
+        <label for="newCategory">Category:</label>
+        <select id="newCategory">
+          <option value="mountain-bike">Mountain Bike</option>
+          <!-- Add other categories dynamically here -->
+        </select>
 
-            <button type="submit">Create Item</button>
-        </form>
-    </div>
+        <label for="newPartName">Part Name:</label>
+        <input type="text" id="newPartName" required>
+
+        <label for="openingStock">Opening Stock:</label>
+        <input type="number" id="openingStock" min="1" required>
+
+        <button type="submit" id="addNewItemBtn">Add Item</button>
+      </div>
+    </form>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
