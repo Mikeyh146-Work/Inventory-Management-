@@ -1,80 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory</title>
-  <link rel="stylesheet" href="style.css">
+<script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
+    authDomain: "brian-inventory-management.firebaseapp.com",
+    projectId: "brian-inventory-management",
+    storageBucket: "brian-inventory-management.firebasestorage.app",
+    messagingSenderId: "276972422558",
+    appId: "1:276972422558:web:c1ef8577015f3a9097428f",
+    measurementId: "G-HW9K6R9WKM",
+  };
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-</head>
-<body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="inventory.html">Inventory</a></li>
-        <li><a href="stockcontrol.html">Stock Control</a></li>
-        <li><a href="repairs.html">Repairs</a></li>
-      </ul>
-    </nav>
-  </header>
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-  <h1>Inventory</h1>
-  <div id="inventory-list">
-    <!-- Inventory data will be displayed here -->
-  </div>
+  // Reference the inventory collection
+  const inventoryRef = db.collection("inventory");
 
-  <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-      authDomain: "brian-inventory-management.firebaseapp.com",
-      projectId: "brian-inventory-management",
-      storageBucket: "brian-inventory-management.firebasestorage.app",
-      messagingSenderId: "276972422558",
-      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-      measurementId: "G-HW9K6R9WKM"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Reference to the inventory collection (lowercase "inventory")
-    const inventoryRef = db.collection("inventory");
-
-    // Function to display inventory items
-    function displayInventory() {
-      inventoryRef.get().then((querySnapshot) => {
+  // Function to display inventory data
+  function displayInventory() {
+    inventoryRef.get()
+      .then((querySnapshot) => {
         const inventoryList = document.getElementById("inventory-list");
         inventoryList.innerHTML = ""; // Clear existing content
 
         querySnapshot.forEach((doc) => {
-          const data = doc.data(); // Get items and QTY
-          const category = doc.id; // Get the document name (category)
+          const data = doc.data(); // Get fields (items and quantities)
+          const category = doc.id; // Get document ID (e.g., Mountain Bike)
           const categoryDiv = document.createElement("div");
 
-          // Create category header
+          // Generate HTML for this category
           let categoryHtml = `<h2>${category}</h2><ul>`;
-          for (const item in data) {
-            categoryHtml += `<li>${item}: ${data[item]}</li>`;
+          for (const [item, qty] of Object.entries(data)) {
+            categoryHtml += `<li>${item}: ${qty}</li>`;
           }
-          categoryHtml += `</ul>`;
+          categoryHtml += "</ul>";
 
-          // Append category data to the page
+          // Append the category to the page
           categoryDiv.innerHTML = categoryHtml;
           inventoryList.appendChild(categoryDiv);
         });
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.error("Error retrieving inventory: ", error);
       });
-    }
+  }
 
-    // Call the function to display the inventory
-    displayInventory();
-  </script>
-</body>
-</html>
+  // Call the function on page load
+  displayInventory();
+</script>
