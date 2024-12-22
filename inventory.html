@@ -16,7 +16,7 @@
       <ul>
         <li><a href="index.html">Home</a></li>
         <li><a href="inventory.html">Inventory</a></li>
-        <li><a href="stock-control.html">Stock Control</a></li>
+        <li><a href="stockcontrol.html">Stock Control</a></li>
         <li><a href="repairs.html">Repairs</a></li>
       </ul>
     </nav>
@@ -52,25 +52,34 @@
     function displayInventory() {
       inventoryRef.get()
         .then((querySnapshot) => {
+          console.log('Firestore data:', querySnapshot); // Debugging: log the querySnapshot
+
           const inventoryList = document.getElementById("inventory-list");
           inventoryList.innerHTML = ""; // Clear existing content
 
-          querySnapshot.forEach((doc) => {
-            const data = doc.data(); // Get fields (items and quantities)
-            const category = doc.id; // Get document ID (e.g., Mountain Bike)
-            const categoryDiv = document.createElement("div");
+          if (querySnapshot.empty) {
+            inventoryList.innerHTML = "<p>No inventory data found.</p>";
+          } else {
+            querySnapshot.forEach((doc) => {
+              const data = doc.data(); // Get fields (items and quantities)
+              const category = doc.id; // Get document ID (e.g., Mountain Bike)
+              const categoryDiv = document.createElement("div");
 
-            // Generate HTML for this category using template literals
-            let categoryHtml = `<h2>${category}</h2><ul>`;
-            for (const [item, qty] of Object.entries(data)) {
-              categoryHtml += `<li>${item}: ${qty}</li>`;
-            }
-            categoryHtml += "</ul>";
+              // Log the category and data to ensure they are fetched correctly
+              console.log('Category:', category, 'Data:', data);
 
-            // Append the category to the page
-            categoryDiv.innerHTML = categoryHtml;
-            inventoryList.appendChild(categoryDiv);
-          });
+              // Generate HTML for this category using template literals
+              let categoryHtml = `<h2>${category}</h2><ul>`;
+              for (const [item, qty] of Object.entries(data)) {
+                categoryHtml += `<li>${item}: ${qty}</li>`;
+              }
+              categoryHtml += "</ul>";
+
+              // Append the category to the page
+              categoryDiv.innerHTML = categoryHtml;
+              inventoryList.appendChild(categoryDiv);
+            });
+          }
         })
         .catch((error) => {
           console.error("Error retrieving inventory: ", error);
