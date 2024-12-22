@@ -5,28 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventory</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-firestore.js"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
-
-  <!-- Top Navigation Bar -->
-  <div class="navbar">
-    <a href="index.html">Home</a>
-    <a href="stock_control.html">Stock Control</a>
-    <a href="repairs.html">Repairs</a>
-    <a href="inventory.html">Inventory</a>
-    <!-- Add more pages here as needed -->
+  <h1>Inventory</h1>
+  <div id="inventory-list">
+    <!-- Inventory data will be displayed here -->
   </div>
 
-  <div class="inventory-page">
-    <h2>Inventory List</h2>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
+      authDomain: "brian-inventory-management.firebaseapp.com",
+      projectId: "brian-inventory-management",
+      storageBucket: "brian-inventory-management.firebasestorage.app",
+      messagingSenderId: "276972422558",
+      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
+      measurementId: "G-HW9K6R9WKM"
+    };
 
-    <div class="inventory-list">
-      <!-- Inventory items will be dynamically loaded here -->
-    </div>
-  </div>
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-  <script src="inventory.js"></script>
+    // Reference to the inventory collection
+    const inventoryRef = db.collection('inventory');
+
+    // Function to display inventory items
+    function displayInventory() {
+      inventoryRef.get().then((querySnapshot) => {
+        const inventoryList = document.getElementById('inventory-list');
+        inventoryList.innerHTML = ''; // Clear existing list
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const category = doc.id;
+          const inventoryItem = document.createElement('div');
+
+          let itemsHtml = `<h2>${category}</h2>`;
+          for (const part in data) {
+            itemsHtml += `<p><strong>${part}</strong>: ${data[part]}</p>`;
+          }
+
+          inventoryItem.innerHTML = itemsHtml;
+          inventoryList.appendChild(inventoryItem);
+        });
+      }).catch((error) => {
+        console.log("Error getting documents: ", error);
+      });
+    }
+
+    // Call the function to display the inventory
+    displayInventory();
+  </script>
 </body>
 </html>
