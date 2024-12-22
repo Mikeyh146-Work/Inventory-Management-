@@ -14,11 +14,11 @@ function displayInventory() {
       const categoryDiv = document.createElement('div');
 
       // Create category header
-      let categoryHtml = `<h2>${category}</h2><ul>`;
+      let categoryHtml = <h2>${category}</h2><ul>;
       for (const item in data) {
-        categoryHtml += `<li>${item}: ${data[item]}</li>`;
+        categoryHtml += <li>${item}: ${data[item]}</li>;
       }
-      categoryHtml += `</ul>`;
+      categoryHtml += </ul>;
 
       // Append category data to the page
       categoryDiv.innerHTML = categoryHtml;
