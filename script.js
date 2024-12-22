@@ -1,32 +1,32 @@
-function displayInventory() {
-  inventoryRef.get().then((querySnapshot) => {
-    const inventoryList = document.getElementById('inventory-list');
-    inventoryList.innerHTML = ''; // Clear existing content
+$(document).ready(function() {
+  // Link to your CSV file
+  const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnbPKpvjGhZCULOZIH3hrPv8djM1Jkk7z3I_R0IC9OsoUd5rcCU16LMZ2qV61b69eKgvmdIaE_oSOK/pub?output=csv';
+  
+  // Fetch the CSV data
+  $.ajax({
+    url: sheetUrl,
+    dataType: 'text',
+  }).done(function(data) {
+    // Parse the CSV data
+    const rows = data.split("\n");
+    const inventoryList = $("#inventory-list");
 
-    if (querySnapshot.empty) {
-      inventoryList.innerHTML = '<p id="empty-message">No inventory items found.</p>';
-      return;
-    }
+    rows.forEach(function(row, index) {
+      if(index === 0) return; // Skip header row
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data(); // Get items and QTY
-      const category = doc.id; // Get the document name (category)
-      const categoryDiv = document.createElement('div');
+      const cells = row.split(",");
+      const category = cells[0]; // First column is category
+      const item = cells[1]; // Second column is item
+      const quantity = cells[2]; // Third column is quantity
 
-      // Create category header
-      let categoryHtml = <h2>${category}</h2><ul>;
-      for (const item in data) {
-        categoryHtml += <li>${item}: ${data[item]}</li>;
-      }
-      categoryHtml += </ul>;
+      // Create HTML content to display
+      let categoryHtml = `<div><h2>${category}</h2><ul>`;
+      categoryHtml += `<li>${item}: ${quantity}</li></ul></div>`;
 
-      // Append category data to the page
-      categoryDiv.innerHTML = categoryHtml;
-      inventoryList.appendChild(categoryDiv);
+      // Append to inventory list
+      inventoryList.append(categoryHtml);
     });
-  }).catch((error) => {
-    const inventoryList = document.getElementById('inventory-list');
-    inventoryList.innerHTML = '<p id="error-message">Error retrieving inventory data. Please try again later.</p>';
-    console.error("Error retrieving inventory: ", error);
+  }).fail(function() {
+    alert('Failed to load data from Google Sheets.');
   });
-}
+});
