@@ -5,59 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Control</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.9.0/firebase-firestore.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="inventory.html">Inventory</a></li>
+        <li><a href="stockcontrol.html">Stock Control</a></li>
+        <li><a href="repairs.html">Repairs</a></li>
+      </ul>
+    </nav>
+  </header>
 
-   <div class="stock-control">
-    
-    <!-- Add Stock Quantity Section -->
-    <h2>Add Stock Quantity</h2>
-    <form id="addStockForm">
-      <div class="form-section">
-        <label for="category">Category:</label>
-        <select id="category">
-          <option value="mountain-bike">Mountain Bike</option>
-          <!-- Add other categories dynamically here -->
-        </select>
+  <h1>Stock Control</h1>
+  <form id="addItemForm">
+    <label for="category">Category:</label>
+    <select id="category" name="category">
+      <option value="Mountain Bike">Mountain Bike</option>
+      <option value="4x4">4x4</option>
+      <option value="Buggies">Buggies</option>
+      <option value="E-Bikes">E-Bikes</option>
+    </select><br><br>
 
-        <label for="part">Part:</label>
-        <select id="part">
-          <!-- Parts list will be populated based on category -->
-        </select>
+    <label for="itemName">Item Name:</label>
+    <input type="text" id="itemName" name="itemName" required><br><br>
 
-        <label for="quantity">Quantity to Add:</label>
-        <input type="number" id="quantity" min="1" required>
+    <label for="quantity">Quantity:</label>
+    <input type="number" id="quantity" name="quantity" required><br><br>
 
-        <button type="submit" id="addStockBtn">Add Stock</button>
-      </div>
-    </form>
+    <button type="submit">Add Item</button>
+  </form>
 
-    <hr>
+  <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
+      authDomain: "brian-inventory-management.firebaseapp.com",
+      projectId: "brian-inventory-management",
+      storageBucket: "brian-inventory-management.firebasestorage.app",
+      messagingSenderId: "276972422558",
+      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
+      measurementId: "G-HW9K6R9WKM"
+    };
 
-    <!-- Add New Stock Item Section -->
-    <h2>Add New Stock Item</h2>
-    <form id="newItemForm">
-      <div class="form-section">
-        <label for="newCategory">Category:</label>
-        <select id="newCategory">
-          <option value="mountain-bike">Mountain Bike</option>
-          <!-- Add other categories dynamically here -->
-        </select>
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        <label for="newPartName">Part Name:</label>
-        <input type="text" id="newPartName" required>
+    // Get the form element
+    const form = document.getElementById('addItemForm');
 
-        <label for="openingStock">Opening Stock:</label>
-        <input type="number" id="openingStock" min="1" required>
+    // Function to handle form submission
+    form.addEventListener('submit', async function(event) {
+      event.preventDefault();
 
-        <button type="submit" id="addNewItemBtn">Add Item</button>
-      </div>
-    </form>
+      // Get values from the form
+      const category = document.getElementById('category').value;
+      const itemName = document.getElementById('itemName').value;
+      const quantity = document.getElementById('quantity').value;
 
-  </div>
+      // Get reference to the category document in Firestore
+      const categoryRef = db.collection('Inventory').doc(category);
 
-  <script src="script.js"></script>
+      try {
+        // Update Firestore: Add the item with the quantity to the category document
+        await categoryRef.update({
+          [itemName]: quantity
+        });
+
+        alert(`Item added: ${itemName} with quantity ${quantity}`);
+        // Reset the form
+        form.reset();
+      } catch (error) {
+        console.error("Error adding item: ", error);
+        alert("Error adding item to inventory.");
+      }
+    });
+  </script>
 </body>
 </html>
