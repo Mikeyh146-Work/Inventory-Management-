@@ -3,22 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repair Request Form</title>
-  <link rel="stylesheet" href="style.css"> <!-- Link to existing stylesheet -->
+  <title>Repair Log</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- For handling dynamic updates -->
 </head>
 <body>
-  <div class="login-container">
-    <div class="login-box">
-      <h1>Repair Request</h1>
-      <p>Please fill out the form below to submit a repair request.</p>
+  <div class="repair-container">
+    <h1>Repair Log Form</h1>
+    <form id="repair-form">
+      <!-- Q1: What have you repaired -->
+      <label for="repair-type">What have you repaired:</label>
+      <select id="repair-type" name="repair-type">
+        <option value="mountain-bike">Mountain Bike</option>
+        <option value="4x4">4x4</option>
+        <option value="e-bike">E-Bike</option>
+        <option value="green-buggy">Green Buggy</option>
+        <option value="blue-buggy">Blue Buggy</option>
+      </select>
 
-      <!-- Microsoft Form Embed Code -->
-      <div class="microsoft-form-embed">
-        <iframe width="100%" height="600px" src="https://forms.office.com/Pages/ResponsePage.aspx?id=gvVtFS01pkScaci9AfgOnay-PkSEZ25Bp57U4mzPNI1UNklMMzNYWVJVS0xPMk01REJZWlhXTDVIRS4u&embed=true" 
-                frameborder="0" marginwidth="0" marginheight="0" style="border: none; max-width:100%; max-height:100vh" allowfullscreen webkitallowfullscreen mozallowfullscreen msallowfullscreen>
-        </iframe>
+      <!-- Q2: Asset Number -->
+      <label for="asset-number">Asset Number:</label>
+      <input type="text" id="asset-number" name="asset-number" required>
+
+      <!-- Q3: Repair Description -->
+      <label for="repair-description">What repair have you done?</label>
+      <input type="text" id="repair-description" name="repair-description" required>
+
+      <!-- Q4: Did you use any parts? -->
+      <label>Did you use any parts?</label>
+      <input type="radio" id="yes" name="used-parts" value="yes">
+      <label for="yes">Yes</label>
+      <input type="radio" id="no" name="used-parts" value="no">
+      <label for="no">No</label>
+
+      <!-- Q5: What parts did you use? (Dynamically shown based on Q4) -->
+      <div id="parts-section" style="display:none;">
+        <label for="parts">What parts did you use?</label>
+        <select id="parts" name="parts">
+          <!-- Options will be filled dynamically using JavaScript based on Q1 answer -->
+        </select>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" min="1" value="1">
       </div>
-    </div>
+
+      <button type="submit">Submit Repair Log</button>
+    </form>
   </div>
+
+  <script>
+    // Simulated inventory data (you would fetch this from a database in a real app)
+    const inventory = {
+      "mountain-bike": [
+        { part: "Mountain Bike Wheel", quantity: 10 },
+        { part: "Mountain Bike Handlebar", quantity: 8 }
+      ],
+      "4x4": [
+        { part: "4x4 Engine Part", quantity: 5 },
+        { part: "4x4 Tires", quantity: 7 }
+      ],
+      "e-bike": [
+        { part: "E-Bike Battery", quantity: 3 },
+        { part: "E-Bike Motor", quantity: 6 }
+      ],
+      "green-buggy": [
+        { part: "Green Buggy Tire", quantity: 12 },
+        { part: "Green Buggy Seat", quantity: 4 }
+      ],
+      "blue-buggy": [
+        { part: "Blue Buggy Engine", quantity: 2 },
+        { part: "Blue Buggy Wheel", quantity: 5 }
+      ]
+    };
+
+    // Handle radio buttons for parts usage
+    $('input[name="used-parts"]').change(function() {
+      if ($("#yes").is(":checked")) {
+        $("#parts-section").show();
+        updatePartsDropdown();
+      } else {
+        $("#parts-section").hide();
+      }
+    });
+
+    // Update the parts dropdown based on the repair type (Q1 answer)
+    $("#repair-type").change(function() {
+      if ($("#yes").is(":checked")) {
+        updatePartsDropdown();
+      }
+    });
+
+    // Function to populate parts dropdown based on selected repair type
+    function updatePartsDropdown() {
+      const selectedRepair = $("#repair-type").val();
+      const partsDropdown = $("#parts");
+
+      partsDropdown.empty(); // Clear existing options
+
+      inventory[selectedRepair].forEach(item => {
+        partsDropdown.append(new Option(item.part, item.part));
+      });
+    }
+
+    // Handle form submission
+    $('#repair-form').submit(function(e) {
+      e.preventDefault();
+      
+      const formData = {
+        repairType: $("#repair-type").val(),
+        assetNumber: $("#asset-number").val(),
+        repairDescription: $("#repair-description").val(),
+        usedParts: $("input[name='used-parts']:checked").val() === 'yes',
+        partUsed: $("#parts").val(),
+        quantity: $("#quantity").val()
+      };
+
+      console.log(formData);  // For testing, you would store this data in a DB
+
+      // Save form data to a database and deduct stock (would be done server-side)
+      // Example: You would send this data to your server to store in the database
+      // And deduct parts from the inventory
+
+      // Example server request (to be replaced with actual API call):
+      /*
+      $.ajax({
+        url: 'https://your-server-endpoint.com/save-repair',
+        method: 'POST',
+        data: formData,
+        success: function(response) {
+          alert('Repair Log submitted successfully!');
+        },
+        error: function(error) {
+          alert('Error submitting repair log!');
+        }
+      });
+      */
+    });
+  </script>
 </body>
 </html>
