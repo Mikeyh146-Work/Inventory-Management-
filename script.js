@@ -1,82 +1,39 @@
-// Initialize Firebase
+// Firebase Configuration and Initialization
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
   projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
 };
 
 const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore(app);
 
-// References to HTML elements
-const addStockForm = document.getElementById('addStockForm');
-const newItemForm = document.getElementById('newItemForm');
-const categoryDropdown = document.getElementById('category');
-const partDropdown = document.getElementById('part');
-const quantityInput = document.getElementById('quantity');
-const newCategoryDropdown = document.getElementById('newCategory');
-const newPartNameInput = document.getElementById('newPartName');
-const openingStockInput = document.getElementById('openingStock');
+// Get the inventory collection and display it
+const inventoryList = document.querySelector('.inventory-list');
 
-// Populate part dropdown based on category selection
-categoryDropdown.addEventListener('change', async () => {
-  const selectedCategory = categoryDropdown.value;
-  const partsRef = db.collection('inventory').doc(selectedCategory).collection('parts');
-  const snapshot = await partsRef.get();
-  partDropdown.innerHTML = ''; // Clear existing options
-
-  snapshot.forEach(doc => {
-    const part = doc.data();
-    const option = document.createElement('option');
-    option.value = part.name;
-    option.textContent = part.name;
-    partDropdown.appendChild(option);
+function fetchInventory() {
+  db.collection("inventory").get().then((querySnapshot) => {
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const inventoryItem = document.createElement('div');
+      inventoryItem.classList.add('inventory-item');
+      
+      inventoryItem.innerHTML = `
+        <p><strong>Category:</strong> ${data.category}</p>
+        <p><strong>Part Name:</strong> ${data.partName}</p>
+        <p><strong>Opening Stock:</strong> ${data.openingStock}</p>
+        <p><strong>Current Stock:</strong> ${data.currentStock}</p>
+      `;
+      
+      inventoryList.appendChild(inventoryItem);
+    });
+  }).catch((error) => {
+    console.error("Error fetching inventory data: ", error);
   });
-});
+}
 
-// Handle adding stock quantity
-addStockForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const partName = partDropdown.value;
-  const quantityToAdd = parseInt(quantityInput.value, 10);
-
-  const selectedCategory = categoryDropdown.value;
-  const partRef = db.collection('inventory').doc(selectedCategory).collection('parts').doc(partName);
-
-  const doc = await partRef.get();
-  if (doc.exists) {
-    const existingQuantity = doc.data().quantity || 0;
-    await partRef.update({ quantity: existingQuantity + quantityToAdd });
-    alert("Stock updated successfully!");
-  } else {
-    alert("Part not found in inventory.");
-  }
-
-  quantityInput.value = ''; // Clear the input
-});
-
-// Handle adding new stock item
-newItemForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const newCategory = newCategoryDropdown.value;
-  const newPartName = newPartNameInput.value;
-  const openingStock = parseInt(openingStockInput.value, 10);
-
-  const newPartRef = db.collection('inventory').doc(newCategory).collection('parts').doc(newPartName);
-
-  await newPartRef.set({
-    name: newPartName,
-    quantity: openingStock
-  });
-
-  alert("New part added successfully!");
-
-  newPartNameInput.value = '';
-  openingStockInput.value = ''; // Clear the input
-});
-
+// Load inventory on page load
+document.addEventListener('DOMContentLoaded', fetchInventory);
