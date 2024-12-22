@@ -11,6 +11,17 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
 </head>
 <body>
+  <header>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="inventory.html">Inventory</a></li>
+        <li><a href="stockcontrol.html">Stock Control</a></li>
+        <li><a href="repairs.html">Repairs</a></li>
+      </ul>
+    </nav>
+  </header>
+
   <h1>Inventory</h1>
   <div id="inventory-list">
     <!-- Inventory data will be displayed here -->
@@ -33,29 +44,32 @@
     const db = firebase.firestore();
 
     // Reference to the inventory collection
-    const inventoryRef = db.collection('inventory');
+    const inventoryRef = db.collection('Inventory');
 
     // Function to display inventory items
     function displayInventory() {
       inventoryRef.get().then((querySnapshot) => {
         const inventoryList = document.getElementById('inventory-list');
-        inventoryList.innerHTML = ''; // Clear existing list
+        inventoryList.innerHTML = ''; // Clear existing content
 
         querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const category = doc.id;
-          const inventoryItem = document.createElement('div');
+          const data = doc.data(); // Get items and QTY
+          const category = doc.id; // Get the document name (category)
+          const categoryDiv = document.createElement('div');
 
-          let itemsHtml = `<h2>${category}</h2>`;
-          for (const part in data) {
-            itemsHtml += `<p><strong>${part}</strong>: ${data[part]}</p>`;
+          // Create category header
+          let categoryHtml = `<h2>${category}</h2><ul>`;
+          for (const item in data) {
+            categoryHtml += `<li>${item}: ${data[item]}</li>`;
           }
+          categoryHtml += `</ul>`;
 
-          inventoryItem.innerHTML = itemsHtml;
-          inventoryList.appendChild(inventoryItem);
+          // Append category data to the page
+          categoryDiv.innerHTML = categoryHtml;
+          inventoryList.appendChild(categoryDiv);
         });
       }).catch((error) => {
-        console.log("Error getting documents: ", error);
+        console.error("Error retrieving inventory: ", error);
       });
     }
 
