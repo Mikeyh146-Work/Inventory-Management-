@@ -1,74 +1,82 @@
-// Import the required Firebase functions
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
-
-// Your Firebase configuration
+// Initialize Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-  authDomain: "brian-inventory-management.firebaseapp.com",
-  projectId: "brian-inventory-management",
-  storageBucket: "brian-inventory-management.appspot.com",
-  messagingSenderId: "276972422558",
-  appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-  measurementId: "G-HW9K6R9WKM",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
-// Initialize Firebase and Firestore
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore(app);
 
-// Reference to the "inventory" Firestore collection
-const inventoryCollection = collection(db, "inventory");
+// References to HTML elements
+const addStockForm = document.getElementById('addStockForm');
+const newItemForm = document.getElementById('newItemForm');
+const categoryDropdown = document.getElementById('category');
+const partDropdown = document.getElementById('part');
+const quantityInput = document.getElementById('quantity');
+const newCategoryDropdown = document.getElementById('newCategory');
+const newPartNameInput = document.getElementById('newPartName');
+const openingStockInput = document.getElementById('openingStock');
 
-// DOM elements
-const addItemForm = document.getElementById("add-item-form");
-const inventoryList = document.getElementById("inventory-list");
+// Populate part dropdown based on category selection
+categoryDropdown.addEventListener('change', async () => {
+  const selectedCategory = categoryDropdown.value;
+  const partsRef = db.collection('inventory').doc(selectedCategory).collection('parts');
+  const snapshot = await partsRef.get();
+  partDropdown.innerHTML = ''; // Clear existing options
 
-// Function to load and display inventory from Firestore
-async function loadInventory() {
-  inventoryList.innerHTML = ""; // Clear the current list
-
-  try {
-    const querySnapshot = await getDocs(inventoryCollection);
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const listItem = document.createElement("div");
-      listItem.innerHTML = `
-        <strong>${data.itemName}</strong> - 
-        Quantity: ${data.quantity} - 
-        Location: ${data.location}
-      `;
-      inventoryList.appendChild(listItem);
-    });
-  } catch (error) {
-    console.error("Error loading inventory: ", error);
-  }
-}
-
-// Function to handle adding an item to Firestore
-addItemForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  // Get form input values
-  const itemName = document.getElementById("item-name").value;
-  const quantity = parseInt(document.getElementById("quantity").value, 10);
-  const location = document.getElementById("location").value;
-
-  try {
-    // Add the new item to Firestore
-    await addDoc(inventoryCollection, {
-      itemName,
-      quantity,
-      location,
-    });
-
-    alert("Item added successfully!");
-    addItemForm.reset(); // Clear the form
-    loadInventory(); // Refresh the inventory list
-  } catch (error) {
-    console.error("Error adding item: ", error);
-  }
+  snapshot.forEach(doc => {
+    const part = doc.data();
+    const option = document.createElement('option');
+    option.value = part.name;
+    option.textContent = part.name;
+    partDropdown.appendChild(option);
+  });
 });
 
-// Load the inventory list when the page loads
-loadInventory();
+// Handle adding stock quantity
+addStockForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const partName = partDropdown.value;
+  const quantityToAdd = parseInt(quantityInput.value, 10);
+
+  const selectedCategory = categoryDropdown.value;
+  const partRef = db.collection('inventory').doc(selectedCategory).collection('parts').doc(partName);
+
+  const doc = await partRef.get();
+  if (doc.exists) {
+    const existingQuantity = doc.data().quantity || 0;
+    await partRef.update({ quantity: existingQuantity + quantityToAdd });
+    alert("Stock updated successfully!");
+  } else {
+    alert("Part not found in inventory.");
+  }
+
+  quantityInput.value = ''; // Clear the input
+});
+
+// Handle adding new stock item
+newItemForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const newCategory = newCategoryDropdown.value;
+  const newPartName = newPartNameInput.value;
+  const openingStock = parseInt(openingStockInput.value, 10);
+
+  const newPartRef = db.collection('inventory').doc(newCategory).collection('parts').doc(newPartName);
+
+  await newPartRef.set({
+    name: newPartName,
+    quantity: openingStock
+  });
+
+  alert("New part added successfully!");
+
+  newPartNameInput.value = '';
+  openingStockInput.value = ''; // Clear the input
+});
+
