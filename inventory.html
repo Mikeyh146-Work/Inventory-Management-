@@ -6,9 +6,8 @@
   <title>Inventory</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- Firebase SDK (Non-Module Version) -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js" defer></script>
+  <!-- Firebase SDK -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
   <header>
@@ -30,62 +29,38 @@
   </main>
 
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-      authDomain: "brian-inventory-management.firebaseapp.com",
-      projectId: "brian-inventory-management",
-      storageBucket: "brian-inventory-management.firebasestorage.app",
-      messagingSenderId: "276972422558",
-      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-      measurementId: "G-HW9K6R9WKM",
-    };
+    $(document).ready(function() {
+      // Link to your CSV file
+      const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnbPKpvjGhZCULOZIH3hrPv8djM1Jkk7z3I_R0IC9OsoUd5rcCU16LMZ2qV61b69eKgvmdIaE_oSOK/pub?output=csv';
+      
+      // Fetch the CSV data
+      $.ajax({
+        url: sheetUrl,
+        dataType: 'text',
+      }).done(function(data) {
+        // Parse the CSV data
+        const rows = data.split("\n");
+        const inventoryList = $("#inventory-list");
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+        rows.forEach(function(row, index) {
+          if(index === 0) return; // Skip header row
 
-    // Reference the inventory collection
-    const inventoryRef = db.collection("inventory");
+          const cells = row.split(",");
+          const category = cells[0]; // First column is category
+          const item = cells[1]; // Second column is item
+          const quantity = cells[2]; // Third column is quantity
 
-    // Function to display inventory data
-    function displayInventory() {
-      console.log("Fetching inventory data...");
-      inventoryRef.get()
-        .then((querySnapshot) => {
-          const inventoryList = document.getElementById("inventory-list");
-          inventoryList.innerHTML = ""; // Clear existing content
+          // Create HTML content to display
+          let categoryHtml = `<div><h2>${category}</h2><ul>`;
+          categoryHtml += `<li>${item}: ${quantity}</li></ul></div>`;
 
-          if (querySnapshot.empty) {
-            console.log("Firestore data retrieved: No data found");
-            return;
-          }
-
-          console.log("Firestore data retrieved: Data found");
-          querySnapshot.forEach((doc) => {
-            const data = doc.data(); // Get fields (items and quantities)
-            const category = doc.id; // Get document ID (e.g., Mountain Bike)
-            const categoryDiv = document.createElement("div");
-
-            // Generate HTML for this category
-            let categoryHtml = `<h2>${category}</h2><ul>`;
-            for (const [item, qty] of Object.entries(data)) {
-              categoryHtml += `<li>${item}: ${qty}</li>`;
-            }
-            categoryHtml += "</ul>";
-
-            // Append the category to the page
-            categoryDiv.innerHTML = categoryHtml;
-            inventoryList.appendChild(categoryDiv);
-          });
-        })
-        .catch((error) => {
-          console.error("Error retrieving inventory: ", error);
+          // Append to inventory list
+          inventoryList.append(categoryHtml);
         });
-    }
-
-    // Call the function on page load
-    displayInventory();
+      }).fail(function() {
+        alert('Failed to load data from Google Sheets.');
+      });
+    });
   </script>
 </body>
 </html>
