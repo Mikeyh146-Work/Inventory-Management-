@@ -43,19 +43,19 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Reference to the inventory collection
-    const inventoryRef = db.collection('Inventory');
+    // Reference to the inventory collection (lowercase "inventory")
+    const inventoryRef = db.collection("inventory");
 
     // Function to display inventory items
     function displayInventory() {
       inventoryRef.get().then((querySnapshot) => {
-        const inventoryList = document.getElementById('inventory-list');
-        inventoryList.innerHTML = ''; // Clear existing content
+        const inventoryList = document.getElementById("inventory-list");
+        inventoryList.innerHTML = ""; // Clear existing content
 
         querySnapshot.forEach((doc) => {
           const data = doc.data(); // Get items and QTY
           const category = doc.id; // Get the document name (category)
-          const categoryDiv = document.createElement('div');
+          const categoryDiv = document.createElement("div");
 
           // Create category header
           let categoryHtml = `<h2>${category}</h2><ul>`;
