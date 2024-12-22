@@ -43,7 +43,7 @@
 
     // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    const db = firebase.firestore(app);
 
     // Reference the inventory collection
     const inventoryRef = db.collection("inventory");
@@ -60,10 +60,10 @@
             const category = doc.id; // Get document ID (e.g., Mountain Bike)
             const categoryDiv = document.createElement("div");
 
-            // Generate HTML for this category
-            let categoryHtml = <h2>${category}</h2><ul>;
+            // Generate HTML for this category using template literals
+            let categoryHtml = `<h2>${category}</h2><ul>`;
             for (const [item, qty] of Object.entries(data)) {
-              categoryHtml += <li>${item}: ${qty}</li>;
+              categoryHtml += `<li>${item}: ${qty}</li>`;
             }
             categoryHtml += "</ul>";
 
@@ -81,4 +81,4 @@
     displayInventory();
   </script>
 </body>
-</html>stock-control.html
+</html>
