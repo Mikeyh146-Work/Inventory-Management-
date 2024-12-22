@@ -61,9 +61,9 @@
             const categoryDiv = document.createElement("div");
 
             // Generate HTML for this category
-            let categoryHtml = `<h2>${category}</h2><ul>`;
+            let categoryHtml = <h2>${category}</h2><ul>;
             for (const [item, qty] of Object.entries(data)) {
-              categoryHtml += `<li>${item}: ${qty}</li>`;
+              categoryHtml += <li>${item}: ${qty}</li>;
             }
             categoryHtml += "</ul>";
 
@@ -81,4 +81,4 @@
     displayInventory();
   </script>
 </body>
-</html>
+</html>stock-control.html
