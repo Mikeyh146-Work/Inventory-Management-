@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Stock Control</title>
   <link rel="stylesheet" href="style.css">
-  
-  <!-- Firebase SDK -->
+
+  <!-- Firebase SDK (If needed for other features) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+  <!-- Google API -->
+  <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
   <header>
@@ -22,70 +25,112 @@
     </nav>
   </header>
 
-  <h1>Stock Control</h1>
-  <form id="addItemForm">
-    <label for="category">Category:</label>
-    <select id="category" name="category">
-      <option value="Mountain Bike">Mountain Bike</option>
-      <option value="4x4">4x4</option>
-      <option value="Buggies">Buggies</option>
-      <option value="E-Bikes">E-Bikes</option>
-    </select><br><br>
+  <main>
+    <h1>Stock Control - Add New Item</h1>
 
-    <label for="itemName">Item Name:</label>
-    <input type="text" id="itemName" name="itemName" required><br><br>
+    <form id="add-item-form">
+      <label for="category">Category</label>
+      <!-- Category Dropdown -->
+      <select id="category" name="category" required>
+        <option value="" disabled selected>Select Category</option>
+        <option value="Mountain Bikes">Mountain Bikes</option>
+        <option value="E-Bikes">E-Bikes</option>
+        <option value="Buggies">Buggies</option>
+        <option value="4x4">4x4</option>
+      </select>
 
-    <label for="quantity">Quantity:</label>
-    <input type="number" id="quantity" name="quantity" required><br><br>
+      <label for="item-name">Item Name</label>
+      <input type="text" id="item-name" name="item-name" required>
 
-    <button type="submit">Add Item</button>
-  </form>
+      <label for="opening-stock">Opening Stock</label>
+      <input type="number" id="opening-stock" name="opening-stock" required>
+
+      <button type="submit">Add Item</button>
+    </form>
+
+    <div id="message"></div> <!-- Message for success/failure -->
+  </main>
 
   <script>
-    // Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBmiLbt-SgIRN4yjoCX6iGTsdvQ4HDz554",
-      authDomain: "brian-inventory-management.firebaseapp.com",
-      projectId: "brian-inventory-management",
-      storageBucket: "brian-inventory-management.firebasestorage.app",
-      messagingSenderId: "276972422558",
-      appId: "1:276972422558:web:c1ef8577015f3a9097428f",
-      measurementId: "G-HW9K6R9WKM"
-    };
+    // Load the Google API client and initialize with API key
+    function loadGoogleAPI() {
+      gapi.load("client", initClient);
+    }
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    // Initialize the API client
+    function initClient() {
+      gapi.client.init({
+        apiKey: 'AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo',  // Use your API key here
+        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+      }).then(function() {
+        console.log("API client initialized");
+      }).catch(function(error) {
+        console.log("Error initializing the API client:", error);
+      });
+    }
 
-    // Get the form element
-    const form = document.getElementById('addItemForm');
+    // Call the loadGoogleAPI function to initialize everything
+    loadGoogleAPI();
 
-    // Function to handle form submission
-    form.addEventListener('submit', async function(event) {
+    // Handle form submission
+    document.getElementById("add-item-form").addEventListener("submit", function(event) {
       event.preventDefault();
 
-      // Get values from the form
-      const category = document.getElementById('category').value;
-      const itemName = document.getElementById('itemName').value;
-      const quantity = document.getElementById('quantity').value;
+      const category = document.getElementById("category").value;
+      const itemName = document.getElementById("item-name").value;
+      const openingStock = document.getElementById("opening-stock").value;
 
-      // Get reference to the category document in Firestore
-      const categoryRef = db.collection('Inventory').doc(category);
-
-      try {
-        // Update Firestore: Add the item with the quantity to the category document
-        await categoryRef.update({
-          [itemName]: quantity
-        });
-
-        alert(`Item added: ${itemName} with quantity ${quantity}`);
-        // Reset the form
-        form.reset();
-      } catch (error) {
-        console.error("Error adding item: ", error);
-        alert("Error adding item to inventory.");
+      if (category && itemName && openingStock) {
+        addNewItem(category, itemName, openingStock);
+      } else {
+        document.getElementById("message").textContent = "All fields are required!";
+        document.getElementById("message").style.color = "red";
       }
     });
+
+    // Function to add new item to Google Sheets
+    function addNewItem(category, itemName, openingStock) {
+      const spreadsheetId = 'your-spreadsheet-id'; // Replace with your Spreadsheet ID
+      const range = 'Sheet1!A1'; // Start range where data will be inserted (adjust as needed)
+
+      // Get current data from the sheet to determine the next available row
+      gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: spreadsheetId,
+        range: range,
+      }).then(function(response) {
+        const existingData = response.result.values;
+        const nextRow = existingData ? existingData.length + 1 : 1;
+
+        const newRow = [
+          category,  // Column A
+          itemName,  // Column B
+          openingStock // Column C
+        ];
+
+        // Append the new item data to the sheet
+        const appendRange = `Sheet1!A${nextRow}:C${nextRow}`;
+        gapi.client.sheets.spreadsheets.values.update({
+          spreadsheetId: spreadsheetId,
+          range: appendRange,
+          valueInputOption: "RAW",
+          values: [newRow]
+        }).then(function() {
+          document.getElementById("message").textContent = "Item added successfully!";
+          document.getElementById("message").style.color = "green";
+
+          // Clear form fields
+          document.getElementById("category").value = "";
+          document.getElementById("item-name").value = "";
+          document.getElementById("opening-stock").value = "";
+        }).catch(function(error) {
+          document.getElementById("message").textContent = "Error adding item!";
+          document.getElementById("message").style.color = "red";
+          console.log("Error adding item:", error);
+        });
+      }).catch(function(error) {
+        console.log("Error reading data from sheet:", error);
+      });
+    }
   </script>
 </body>
 </html>
