@@ -6,8 +6,75 @@
   <title>Inventory</title>
   <link rel="stylesheet" href="style.css">
 
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Firebase and Fetch CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // URL of your Google Sheets CSV
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnbPKpvjGhZCULOZIH3hrPv8djM1Jkk7z3I_R0IC9OsoUd5rcCU16LMZ2qV61b69eKgvmdIaE_oSOK/pub?output=csv';
+
+    // Function to fetch CSV data
+    async function fetchCSV() {
+      const response = await fetch(csvUrl);
+      const data = await response.text();
+      parseCSV(data);
+    }
+
+    // Function to parse CSV data and display it
+    function parseCSV(data) {
+      const rows = data.split('\n').map(row => row.split(','));
+
+      const inventoryData = {};
+
+      // Skip the first row (header) and start processing the rest
+      rows.slice(1).forEach(row => {
+        const category = row[0].trim();
+        const item = row[1].trim();
+        const quantity = row[2].trim();
+
+        // Group by category
+        if (!inventoryData[category]) {
+          inventoryData[category] = [];
+        }
+        inventoryData[category].push({ item, quantity });
+      });
+
+      displayInventory(inventoryData);
+    }
+
+    // Function to display the inventory in the desired format
+    function displayInventory(inventoryData) {
+      const inventoryList = document.getElementById('inventory-list');
+      inventoryList.innerHTML = ''; // Clear any previous data
+
+      Object.keys(inventoryData).forEach(category => {
+        const categoryDiv = document.createElement('div');
+        const categoryTitle = document.createElement('button');
+        categoryTitle.classList.add('category-title');
+        categoryTitle.textContent = `Category - ${category}`;
+        categoryDiv.appendChild(categoryTitle);
+
+        const itemList = document.createElement('ul');
+        itemList.classList.add('category-items');
+        
+        inventoryData[category].forEach(itemData => {
+          const itemListItem = document.createElement('li');
+          itemListItem.textContent = `${itemData.item} - Qty: ${itemData.quantity}`;
+          itemList.appendChild(itemListItem);
+        });
+
+        categoryDiv.appendChild(itemList);
+        inventoryList.appendChild(categoryDiv);
+
+        // Toggle the visibility of the items when the category title is clicked
+        categoryTitle.addEventListener('click', () => {
+          itemList.classList.toggle('show');
+        });
+      });
+    }
+
+    // Call the function to fetch and display the data
+    fetchCSV();
+  </script>
 </head>
 <body>
   <header>
@@ -27,8 +94,5 @@
       <!-- Inventory data will be populated here -->
     </div>
   </main>
-
-  <!-- Link to your separate script.js file -->
-  <script src="script.js"></script>
 </body>
 </html>
