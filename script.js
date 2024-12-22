@@ -1,32 +1,42 @@
-$(document).ready(function() {
-  // Link to your CSV file
-  const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnbPKpvjGhZCULOZIH3hrPv8djM1Jkk7z3I_R0IC9OsoUd5rcCU16LMZ2qV61b69eKgvmdIaE_oSOK/pub?output=csv';
-  
-  // Fetch the CSV data
-  $.ajax({
-    url: sheetUrl,
-    dataType: 'text',
-  }).done(function(data) {
-    // Parse the CSV data
-    const rows = data.split("\n");
-    const inventoryList = $("#inventory-list");
+// Function to add new item to Google Sheets
+function addNewItem(category, itemName, openingStock) {
+  const spreadsheetId = '1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8'; // Your Spreadsheet ID
+  const range = 'Sheet1!A:A'; // Read column A to determine the last used row
 
-    rows.forEach(function(row, index) {
-      if(index === 0) return; // Skip header row
+  // Get current data from the sheet to determine the next available row
+  gapi.client.sheets.spreadsheets.values.get({
+    spreadsheetId: spreadsheetId,
+    range: range,
+  }).then(function(response) {
+    const existingData = response.result.values;
+    const nextRow = existingData ? existingData.length + 1 : 1; // Next available row
 
-      const cells = row.split(",");
-      const category = cells[0]; // First column is category
-      const item = cells[1]; // Second column is item
-      const quantity = cells[2]; // Third column is quantity
+    const newRow = [
+      category,  // Column A
+      itemName,  // Column B
+      openingStock // Column C
+    ];
 
-      // Create HTML content to display
-      let categoryHtml = `<div><h2>${category}</h2><ul>`;
-      categoryHtml += `<li>${item}: ${quantity}</li></ul></div>`;
+    // Append the new item data to the sheet
+    const appendRange = `Sheet1!A${nextRow}:C${nextRow}`;
+    gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: spreadsheetId,
+      range: appendRange,
+      valueInputOption: "RAW",
+      values: [newRow]
+    }).then(function() {
+      displayMessage("Item added successfully!", "green");
 
-      // Append to inventory list
-      inventoryList.append(categoryHtml);
+      // Clear form fields after submission
+      document.getElementById("category").value = "";
+      document.getElementById("item-name").value = "";
+      document.getElementById("opening-stock").value = "";
+    }).catch(function(error) {
+      displayMessage("Error adding item to sheet!", "red");
+      console.log("Error adding item:", error);
     });
-  }).fail(function() {
-    alert('Failed to load data from Google Sheets.');
+  }).catch(function(error) {
+    displayMessage("Error reading data from sheet!", "red");
+    console.log("Error reading data from sheet:", error);
   });
-});
+}
