@@ -1,39 +1,32 @@
-// Firebase Configuration and Initialization
-const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-};
+function displayInventory() {
+  inventoryRef.get().then((querySnapshot) => {
+    const inventoryList = document.getElementById('inventory-list');
+    inventoryList.innerHTML = ''; // Clear existing content
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore(app);
+    if (querySnapshot.empty) {
+      inventoryList.innerHTML = '<p id="empty-message">No inventory items found.</p>';
+      return;
+    }
 
-// Get the inventory collection and display it
-const inventoryList = document.querySelector('.inventory-list');
-
-function fetchInventory() {
-  db.collection("inventory").get().then((querySnapshot) => {
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const inventoryItem = document.createElement('div');
-      inventoryItem.classList.add('inventory-item');
-      
-      inventoryItem.innerHTML = `
-        <p><strong>Category:</strong> ${data.category}</p>
-        <p><strong>Part Name:</strong> ${data.partName}</p>
-        <p><strong>Opening Stock:</strong> ${data.openingStock}</p>
-        <p><strong>Current Stock:</strong> ${data.currentStock}</p>
-      `;
-      
-      inventoryList.appendChild(inventoryItem);
+      const data = doc.data(); // Get items and QTY
+      const category = doc.id; // Get the document name (category)
+      const categoryDiv = document.createElement('div');
+
+      // Create category header
+      let categoryHtml = `<h2>${category}</h2><ul>`;
+      for (const item in data) {
+        categoryHtml += `<li>${item}: ${data[item]}</li>`;
+      }
+      categoryHtml += `</ul>`;
+
+      // Append category data to the page
+      categoryDiv.innerHTML = categoryHtml;
+      inventoryList.appendChild(categoryDiv);
     });
   }).catch((error) => {
-    console.error("Error fetching inventory data: ", error);
+    const inventoryList = document.getElementById('inventory-list');
+    inventoryList.innerHTML = '<p id="error-message">Error retrieving inventory data. Please try again later.</p>';
+    console.error("Error retrieving inventory: ", error);
   });
 }
-
-// Load inventory on page load
-document.addEventListener('DOMContentLoaded', fetchInventory);
