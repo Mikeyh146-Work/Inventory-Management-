@@ -106,6 +106,20 @@ function init() {
 if (e.parameter.category.toLowerCase() === row[0].toLowerCase()) {
   // Do something
 }
+function fetchInventory() {
+    fetch(`${apiBaseURL}?sheet=Inventory&action=read`)
+        .then((response) => response.json())
+        .then((data) => {
+            console.log("Fetched Inventory Data:", data); // Logs API response
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            populateInventory(data.data); // Pass the correct property
+        })
+        .catch((error) => {
+            console.error("Error fetching inventory:", error);
+        });
+}
 
 
 // Initialize the page when the DOM is fully loaded
