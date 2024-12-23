@@ -1,4 +1,4 @@
-const apiBaseURL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec"; // Replace with your deployment ID
+const apiBaseURL = "https://script.google.com/macros/s/AKfycbxCa5AAv_8afVPLFWjJKoE5cy1mELiByasJmJlbr3ETv4y1SL2R_uPEwu1f-i-R01Xy/exec"; // Replace with your deployment ID
 
 document.addEventListener("DOMContentLoaded", () => {
     fetchInventory();
