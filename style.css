@@ -67,3 +67,22 @@ nav ul li a:hover {
 button {
   all: unset;
 }
+
+.collapsible {
+  background-color: #ffffff; /* White background by default */
+  color: #333; /* Dark gray text */
+  cursor: pointer;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 18px;
+  width: 100%;
+  margin-bottom: 5px; /* Space between dropdowns */
+  transition: background-color 0.3s, color 0.3s; /* Smooth hover effect */
+}
+
+.collapsible:hover {
+  background-color: #f0f0f0; /* Light gray background on hover */
+  color: #000; /* Black text on hover */
+}
