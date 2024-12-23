@@ -1,88 +1,80 @@
-/* General Styles */
 body {
-  font-family: 'Arial', sans-serif;
-  background-color: #f8f8f8;
-  color: #333;
-  padding: 20px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
-h1 {
-  text-align: center;
-  color: #333;
+header {
+    text-align: center;
+    background-color: #444;
+    color: #fff;
+    padding: 10px 0;
 }
 
-nav ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
 }
 
-nav ul li a {
-  text-decoration: none;
-  color: #333;
-  font-weight: bold;
+header p {
+    margin: 5px 0;
+    font-size: 1rem;
 }
 
-nav ul li a:hover {
-  color: #004aad;
+main {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin: 20px;
 }
 
-/* Inventory Styles */
-#inventory-list {
-  max-width: 800px;
-  margin: 0 auto;
+.section {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 30%;
 }
 
-.category-title {
-  width: 100%;
-  padding: 15px;
-  background: #f1f1f1;
-  text-align: left;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1.1em;
+.section h2 {
+    margin-top: 0;
 }
 
-.category-items {
-  display: none;
-  list-style: none;
-  padding-left: 20px;
+form label {
+    display: block;
+    margin: 10px 0 5px;
 }
 
-.category-items.show {
-  display: block;
+form input,
+form select,
+form button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
 }
 
-.category-items li {
-  background: #fff;
-  padding: 8px;
-  border: 1px solid #ddd;
-  margin: 5px 0;
-  border-radius: 5px;
+form button {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    cursor: pointer;
 }
 
-button {
-  all: unset;
+form button:hover {
+    background-color: #333;
 }
 
-.collapsible {
-  background-color: #ffffff; /* White background by default */
-  color: #333; /* Dark gray text */
-  cursor: pointer;
-  padding: 10px;
-  text-align: left;
-  border: 1px solid #ccc; /* Light gray border */
-  border-radius: 4px; /* Rounded corners */
-  font-size: 18px;
-  width: 100%;
-  margin-bottom: 5px; /* Space between dropdowns */
-  transition: background-color 0.3s, color 0.3s; /* Smooth hover effect */
-}
-
-.collapsible:hover {
-  background-color: #f0f0f0; /* Light gray background on hover */
-  color: #000; /* Black text on hover */
+footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #444;
+    color: #fff;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
