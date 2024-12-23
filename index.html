@@ -9,69 +9,284 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+        }
+        header h2 {
+            margin: 0;
+            font-weight: normal;
+            font-size: 1.2em;
+        }
+        .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f4f4f9;
-            color: #333;
+            margin: 20px;
         }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-links a {
-            text-decoration: none;
-            background-color: #007BFF;
-            color: #fff;
-            padding: 0.8rem 1.5rem;
+        .section {
+            background: #fff;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
             border-radius: 5px;
-            font-size: 1rem;
-            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
-        .nav-links a:hover {
-            background-color: #0056b3;
+        .section h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
         }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-
-            p {
-                font-size: 1rem;
-            }
-
-            .nav-links a {
-                font-size: 0.9rem;
-                padding: 0.7rem 1.2rem;
-            }
+        .inventory, .add-stock, .repairs {
+            margin: 20px 0;
+        }
+        .dropdown {
+            cursor: pointer;
+            background-color: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+            width: 100%;
+            text-align: left;
+        }
+        .dropdown:hover {
+            background-color: #f1f1f1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        table th, table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        table th {
+            background-color: #f8f8f8;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 4px;
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .success-message, .error-message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error-message {
+            background-color: #f2dede;
+            color: #a94442;
         }
     </style>
 </head>
 <body>
-    <h1>Welcome to Brian</h1>
-    <p>Your ultimate inventory management system</p>
+    <header>
+        <h1>Brian</h1>
+        <h2>Your ultimate inventory management system</h2>
+    </header>
 
-    <div class="nav-links">
-        <a href="repairs.html">Repairs</a>
-        <a href="inventory.html">Inventory</a>
-        <a href="stock-control.html">Stock Control</a>
+    <div class="container">
+        <!-- Inventory Section -->
+        <div class="section inventory">
+            <h3>Inventory</h3>
+            <div id="inventory-list"></div>
+        </div>
+
+        <!-- Add Stock Section -->
+        <div class="section add-stock">
+            <h3>Add Stock</h3>
+            <label for="category">Category</label>
+            <select id="category"></select>
+            <label for="item-name">Item Name</label>
+            <input type="text" id="item-name" placeholder="Enter item name">
+            <label for="quantity">Opening Stock</label>
+            <input type="number" id="quantity" placeholder="Enter quantity">
+            <button onclick="addStock()">Add Stock</button>
+            <div class="success-message" id="add-stock-success">Stock added successfully!</div>
+            <div class="error-message" id="add-stock-error">Error adding stock.</div>
+        </div>
+
+        <!-- Repairs Section -->
+        <div class="section repairs">
+            <h3>Repairs</h3>
+            <label for="repair-category">Category</label>
+            <select id="repair-category"></select>
+            <label for="asset-number">Asset Number</label>
+            <input type="text" id="asset-number" placeholder="Enter asset number">
+            <label for="repair-description">What repair have you done?</label>
+            <textarea id="repair-description" placeholder="Describe the repair"></textarea>
+            <label>Did you use any parts?</label>
+            <select id="used-parts">
+                <option value="No">No</option>
+                <option value="Yes">Yes</option>
+            </select>
+            <label for="part-name" id="part-label" style="display:none;">Part Name</label>
+            <input type="text" id="part-name" placeholder="Enter part name" style="display:none;">
+            <button onclick="submitRepair()">Submit Repair Log</button>
+            <div class="success-message" id="repair-success">Repair log added successfully!</div>
+            <div class="error-message" id="repair-error">Error submitting repair log.</div>
+        </div>
     </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxCa5AAv_8afVPLFWjJKoE5cy1mELiByasJmJlbr3ETv4y1SL2R_uPEwu1f-i-R01Xy/exec";
+
+        // Fetch inventory and populate dropdowns and inventory list
+        function loadInventory() {
+            fetch(WEB_APP_URL + "?action=getInventory")
+                .then(response => response.json())
+                .then(data => {
+                    populateInventory(data);
+                    populateCategories(data);
+                })
+                .catch(error => console.error("Error fetching inventory:", error));
+        }
+
+        function populateInventory(data) {
+            const inventoryList = document.getElementById("inventory-list");
+            inventoryList.innerHTML = ""; // Clear existing data
+            for (const category in data) {
+                const categoryDropdown = document.createElement("details");
+                const categorySummary = document.createElement("summary");
+                categorySummary.textContent = category;
+                categoryDropdown.appendChild(categorySummary);
+
+                const categoryTable = document.createElement("table");
+                categoryTable.innerHTML = `<tr><th>Item</th><th>Quantity</th></tr>`;
+                data[category].forEach(item => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td>${item.name}</td><td>${item.quantity}</td>`;
+                    categoryTable.appendChild(row);
+                });
+
+                categoryDropdown.appendChild(categoryTable);
+                inventoryList.appendChild(categoryDropdown);
+            }
+        }
+
+        function populateCategories(data) {
+            const categorySelect = document.getElementById("category");
+            const repairCategorySelect = document.getElementById("repair-category");
+            categorySelect.innerHTML = "";
+            repairCategorySelect.innerHTML = "";
+
+            for (const category in data) {
+                const option = document.createElement("option");
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+                repairCategorySelect.appendChild(option.cloneNode(true));
+            }
+        }
+
+        // Add stock
+        function addStock() {
+            const category = document.getElementById("category").value;
+            const itemName = document.getElementById("item-name").value;
+            const quantity = document.getElementById("quantity").value;
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "addStock", category, itemName, quantity })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("add-stock-success").style.display = "block";
+                        document.getElementById("add-stock-error").style.display = "none";
+                        loadInventory();
+                    } else {
+                        document.getElementById("add-stock-success").style.display = "none";
+                        document.getElementById("add-stock-error").style.display = "block";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("add-stock-success").style.display = "none";
+                    document.getElementById("add-stock-error").style.display = "block";
+                });
+        }
+
+        // Submit repair log
+        function submitRepair() {
+            const category = document.getElementById("repair-category").value;
+            const assetNumber = document.getElementById("asset-number").value;
+            const repairDescription = document.getElementById("repair-description").value;
+            const usedParts = document.getElementById("used-parts").value;
+            const partName = document.getElementById("part-name").value;
+
+            fetch(WEB_APP_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    action: "addRepairLog",
+                    category,
+                    assetNumber,
+                    repairDescription,
+                    usedParts,
+                    partName
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("repair-success").style.display = "block";
+                        document.getElementById("repair-error").style.display = "none";
+                        loadInventory();
+                    } else {
+                        document.getElementById("repair-success").style.display = "none";
+                        document.getElementById("repair-error").style.display = "block";
+                    }
+                })
+                .catch(() => {
+                    document.getElementById("repair-success").style.display = "none";
+                    document.getElementById("repair-error").style.display = "block";
+                });
+        }
+
+        // Toggle part name visibility
+        document.getElementById("used-parts").addEventListener("change", (e) => {
+            const partInput = document.getElementById("part-name");
+            const partLabel = document.getElementById("part-label");
+            if (e.target.value === "Yes") {
+                partInput.style.display = "block";
+                partLabel.style.display = "block";
+            } else {
+                partInput.style.display = "none";
+                partLabel.style.display = "none";
+            }
+        });
+
+        // Initial load
+        window.onload = loadInventory;
+  </script>
 </body>
 </html>
