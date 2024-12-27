@@ -3,96 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory</title>
-  <link rel="stylesheet" href="style.css">
-
-  <!-- Firebase and Fetch CSV -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    // URL of your Google Sheets CSV
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnbPKpvjGhZCULOZIH3hrPv8djM1Jkk7z3I_R0IC9OsoUd5rcCU16LMZ2qV61b69eKgvmdIaE_oSOK/pub?output=csv';
-
-    // Function to fetch CSV data
-    async function fetchCSV() {
-      const response = await fetch(csvUrl);
-      const data = await response.text();
-      parseCSV(data);
+  <title>Inventory Page</title>
+  <style>
+    /* General Reset */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
     }
 
-    // Function to parse CSV data and display it
-    function parseCSV(data) {
-      const rows = data.split('\n').map(row => row.split(','));
-
-      const inventoryData = {};
-
-      // Skip the first row (header) and start processing the rest
-      rows.slice(1).forEach(row => {
-        const category = row[0].trim();
-        const item = row[1].trim();
-        const quantity = row[2].trim();
-
-        // Group by category
-        if (!inventoryData[category]) {
-          inventoryData[category] = [];
-        }
-        inventoryData[category].push({ item, quantity });
-      });
-
-      displayInventory(inventoryData);
+    /* Navigation Menu */
+    nav {
+      background-color: #ffffff;
+      color: white;
+      padding: 1rem;
+      text-align: center;
     }
 
-    // Function to display the inventory in the desired format
-    function displayInventory(inventoryData) {
-      const inventoryList = document.getElementById('inventory-list');
-      inventoryList.innerHTML = ''; // Clear any previous data
-
-      Object.keys(inventoryData).forEach(category => {
-        const categoryDiv = document.createElement('div');
-        const categoryTitle = document.createElement('button');
-        categoryTitle.classList.add('category-title');
-        categoryTitle.textContent = `Category - ${category}`;
-        categoryDiv.appendChild(categoryTitle);
-
-        const itemList = document.createElement('ul');
-        itemList.classList.add('category-items');
-        
-        inventoryData[category].forEach(itemData => {
-          const itemListItem = document.createElement('li');
-          itemListItem.textContent = `${itemData.item} - Qty: ${itemData.quantity}`;
-          itemList.appendChild(itemListItem);
-        });
-
-        categoryDiv.appendChild(itemList);
-        inventoryList.appendChild(categoryDiv);
-
-        // Toggle the visibility of the items when the category title is clicked
-        categoryTitle.addEventListener('click', () => {
-          itemList.classList.toggle('show');
-        });
-      });
+    nav a {
+      color: black;
+      text-decoration: none;
+      margin: 0 15px;
+      font-size: 1.2rem;
     }
 
-    // Call the function to fetch and display the data
-    fetchCSV();
-  </script>
+    nav a:hover {
+      text-decoration: underline;
+    }
+
+    /* Page Header */
+    h1 {
+      text-align: center;
+      color: #333;
+      margin: 1rem 0;
+    }
+
+    /* Inventory Section */
+    .category {
+      margin: 1rem auto;
+      width: 80%;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-header {
+      padding: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .category-header:hover {
+      background-color: #e9ecef;
+    }
+
+    .category-content {
+      display: none;
+      padding: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="inventory.html">Inventory</a></li>
-        <li><a href="stock-control.html">Stock Control</a></li>
-        <li><a href="repairs.html">Repairs</a></li>
-      </ul>
-    </nav>
-  </header>
+  <!-- Navigation Menu -->
+  <nav>
+    <a href="home.html">Home</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="repairs.html">Repairs</a>
+  </nav>
 
-  <main>
-    <h1>Inventory</h1>
-    <div id="inventory-list">
-      <!-- Inventory data will be populated here -->
-    </div>
-  </main>
+  <h1>Inventory</h1>
+
+  <div id="inventory"></div>
+
+  <script>
+    async function fetchInventory() {
+      const sheetId = "1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8"; // Sheet ID
+      const range = "Inventory!A1:C"; // Adjusted range for the inventory sheet
+      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Your API Key
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.values) {
+          const [headers, ...rows] = data.values; // Separate headers and data rows
+          const categories = {};
+
+          // Group rows by category
+          rows.forEach(row => {
+            const [category, itemName, qty] = row;
+            if (!categories[category]) categories[category] = [];
+            categories[category].push({ itemName, qty });
+          });
+
+          // Render data
+          const inventoryDiv = document.getElementById("inventory");
+          inventoryDiv.innerHTML = Object.keys(categories)
+            .map(category => `
+              <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                  ${category} <span>+</span>
+                </div>
+                <div class="category-content">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${categories[category]
+                        .map(item => `
+                          <tr>
+                            <td>${item.itemName}</td>
+                            <td>${item.qty}</td>
+                          </tr>
+                        `)
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `)
+            .join("");
+        } else {
+          document.getElementById("inventory").innerHTML = "No inventory data found.";
+        }
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
+        document.getElementById("inventory").innerHTML = "Error loading inventory data.";
+      }
+    }
+
+    function toggleCategory(header) {
+      const content = header.nextElementSibling;
+      const isVisible = content.style.display === "block";
+      content.style.display = isVisible ? "none" : "block";
+      header.querySelector("span").textContent = isVisible ? "+" : "-";
+    }
+
+    fetchInventory();
+  </script>
 </body>
 </html>
