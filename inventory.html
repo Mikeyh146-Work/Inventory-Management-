@@ -3,173 +3,160 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Page</title>
+  <title>Repairs Form</title>
   <style>
-    /* General Reset */
+    /* Center everything in a box */
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
-
-    /* Navigation Menu */
-    nav {
-      background-color: #ffffff;
-      color: white;
-      padding: 1rem;
-      text-align: center;
-    }
-
-    nav a {
-      color: black;
-      text-decoration: none;
-      margin: 0 15px;
-      font-size: 1.2rem;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    /* Page Header */
-    h1 {
-      text-align: center;
-      color: #333;
-      margin: 1rem 0;
-    }
-
-    /* Inventory Section */
-    .category {
-      margin: 1rem auto;
-      width: 80%;
-      background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .category-header {
-      padding: 1rem;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1.2rem;
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #ddd;
+      background-color: #f7f7f7;
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
+      height: 100vh;
+      margin: 0;
     }
 
-    .category-header:hover {
-      background-color: #e9ecef;
+    .form-container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      width: 400px;
     }
 
-    .category-content {
-      display: none;
-      padding: 1rem;
+    .form-container h2 {
+      margin-top: 0;
     }
 
-    table {
+    .form-container label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    .form-container select,
+    .form-container input,
+    .form-container button {
       width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-    }
-
-    th, td {
-      text-align: left;
+      margin-top: 5px;
       padding: 8px;
-      border: 1px solid #ddd;
+      border-radius: 4px;
+      border: 1px solid #ccc;
     }
 
-    th {
-      background-color: #007BFF;
+    .form-container button {
+      background-color: #007bff;
       color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .form-container button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-  <!-- Navigation Menu -->
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="inventory.html">Inventory</a>
-    <a href="repairs.html">Repairs</a>
-  </nav>
+  <div class="form-container">
+    <h2>Repairs Form</h2>
+    <form id="repairForm">
+      <label for="repairItem">What did you repair?</label>
+      <input type="text" id="repairItem" required>
 
-  <h1>Inventory</h1>
+      <label for="assetID">Asset ID</label>
+      <input type="text" id="assetID" required>
 
-  <div id="inventory"></div>
+      <label for="repairDetails">Details of the repair</label>
+      <input type="text" id="repairDetails" required>
+
+      <label>Did you use stock?</label>
+      <label><input type="radio" name="stockUsed" value="Yes" required> Yes</label>
+      <label><input type="radio" name="stockUsed" value="No" required> No</label>
+
+      <div id="stockItemsContainer">
+        <label for="partSelect">Select stock items used:</label>
+        <select id="partSelect">
+          <option value="Part A">Part A</option>
+          <option value="Part B">Part B</option>
+          <option value="Part C">Part C</option>
+          <option value="Not in List">Not in List</option>
+        </select>
+
+        <label for="partQuantity">Quantity</label>
+        <input type="number" id="partQuantity" min="1" value="1">
+        <button type="button" id="addPart">Add Part</button>
+      </div>
+
+      <ul id="stockList"></ul>
+
+      <button type="submit">Submit Repair</button>
+    </form>
+  </div>
 
   <script>
-    async function fetchInventory() {
-      const sheetId = "1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8"; // Sheet ID
-      const range = "Inventory!A1:C"; // Adjusted range for the inventory sheet
-      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Your API Key
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+    const stockList = document.getElementById("stockList");
+    const addPartButton = document.getElementById("addPart");
+
+    // Add stock items to the list
+    addPartButton.addEventListener("click", () => {
+      const partSelect = document.getElementById("partSelect");
+      const partQuantity = document.getElementById("partQuantity");
+
+      const selectedPart = partSelect.value;
+      const quantity = partQuantity.value;
+
+      if (selectedPart && quantity) {
+        const li = document.createElement("li");
+        li.textContent = `${selectedPart} - Quantity: ${quantity}`;
+
+        // Add a delete button for each list item
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Remove";
+        deleteButton.style.marginLeft = "10px";
+        deleteButton.onclick = () => li.remove();
+        li.appendChild(deleteButton);
+
+        stockList.appendChild(li);
+        partQuantity.value = 1; // Reset quantity field
+      } else {
+        alert("Please select a part and quantity.");
+      }
+    });
+
+    // Handle form submission
+    document.getElementById("repairForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const repairData = {
+        repairedItem: document.getElementById("repairItem").value,
+        assetID: document.getElementById("assetID").value,
+        repairDetails: document.getElementById("repairDetails").value,
+        stockUsed: document.querySelector('input[name="stockUsed"]:checked').value,
+        stockItems: Array.from(stockList.children).map((item) => {
+          const text = item.textContent.replace("Remove", "").trim();
+          const [part, quantity] = text.split(" - Quantity: ");
+          return { part, quantity };
+        }),
+      };
 
       try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await fetch("https://script.google.com/macros/s/YOUR_SCRIPT_URL_HERE/exec", {
+          method: "POST",
+          body: JSON.stringify(repairData),
+          headers: { "Content-Type": "application/json" },
+        });
 
-        if (data.values) {
-          const [headers, ...rows] = data.values; // Separate headers and data rows
-          const categories = {};
-
-          // Group rows by category
-          rows.forEach(row => {
-            const [category, itemName, qty] = row;
-            if (!categories[category]) categories[category] = [];
-            categories[category].push({ itemName, qty });
-          });
-
-          // Render data
-          const inventoryDiv = document.getElementById("inventory");
-          inventoryDiv.innerHTML = Object.keys(categories)
-            .map(category => `
-              <div class="category">
-                <div class="category-header" onclick="toggleCategory(this)">
-                  ${category} <span>+</span>
-                </div>
-                <div class="category-content">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Item Name</th>
-                        <th>Quantity</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${categories[category]
-                        .map(item => `
-                          <tr>
-                            <td>${item.itemName}</td>
-                            <td>${item.qty}</td>
-                          </tr>
-                        `)
-                        .join("")}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            `)
-            .join("");
+        const result = await response.json();
+        if (result.status === "success") {
+          alert(result.message);
+          e.target.reset();
+          stockList.innerHTML = "";
         } else {
-          document.getElementById("inventory").innerHTML = "No inventory data found.";
+          throw new Error(result.message);
         }
       } catch (error) {
-        console.error("Error fetching inventory:", error);
-        document.getElementById("inventory").innerHTML = "Error loading inventory data.";
+        alert(`Failed to submit repair: ${error.message}`);
       }
-    }
-
-    function toggleCategory(header) {
-      const content = header.nextElementSibling;
-      const isVisible = content.style.display === "block";
-      content.style.display = isVisible ? "none" : "block";
-      header.querySelector("span").textContent = isVisible ? "+" : "-";
-    }
-
-    fetchInventory();
+    });
   </script>
 </body>
 </html>
