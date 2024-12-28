@@ -3,152 +3,195 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repair Log</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- For handling dynamic updates -->
+  <title>Repairs</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+    nav {
+      background-color: #fff;
+      padding: 1em;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      border-bottom: 1px solid #ddd;
+    }
+    nav a {
+      text-decoration: none;
+      color: #000;
+      font-weight: bold;
+    }
+    .container {
+      background: #fff;
+      padding: 2em;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+    .form-group {
+      margin: 1em 0;
+    }
+    label {
+      display: block;
+      margin-bottom: 0.5em;
+      font-weight: bold;
+    }
+    select, input, button {
+      padding: 0.5em;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: block;
+    }
+    #stockList {
+      list-style-type: none;
+      padding: 0;
+      margin: 1em 0;
+    }
+    #stockList li {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5em;
+    }
+    button {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <nav>
-      <ul>
-        <li><a href="index.html">Home</a></li>
-        <li><a href="inventory.html">Inventory</a></li>
-        <li><a href="stock-control.html">Stock Control</a></li>
-        <li><a href="repairs.html">Repairs</a></li>
-      </ul>
-    </nav>
-  </header>
-  <div class="repair-container">
-    <h1>Repair Log Form</h1>
-    <form id="repair-form">
-      <!-- Q1: What have you repaired -->
-      <label for="repair-type">What have you repaired:</label>
-      <select id="repair-type" name="repair-type">
-        <option value="mountain-bike">Mountain Bike</option>
-        <option value="4x4">4x4</option>
-        <option value="e-bike">E-Bike</option>
-        <option value="green-buggy">Green Buggy</option>
-        <option value="blue-buggy">Blue Buggy</option>
-      </select>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="repairs.html">Repairs</a>
+  </nav>
 
-      <!-- Q2: Asset Number -->
-      <label for="asset-number">Asset Number:</label>
-      <input type="text" id="asset-number" name="asset-number" required>
-
-      <!-- Q3: Repair Description -->
-      <label for="repair-description">What repair have you done?</label>
-      <input type="text" id="repair-description" name="repair-description" required>
-
-      <!-- Q4: Did you use any parts? -->
-      <label>Did you use any parts?</label>
-      <input type="radio" id="yes" name="used-parts" value="yes">
-      <label for="yes">Yes</label>
-      <input type="radio" id="no" name="used-parts" value="no">
-      <label for="no">No</label>
-
-      <!-- Q5: What parts did you use? (Dynamically shown based on Q4) -->
-      <div id="parts-section" style="display:none;">
-        <label for="parts">What parts did you use?</label>
-        <select id="parts" name="parts">
-          <!-- Options will be filled dynamically using JavaScript based on Q1 answer -->
+  <div class="container">
+    <h1>Repairs</h1>
+    <form id="repairForm">
+      <div class="form-group">
+        <label for="repairItem">What did you repair?</label>
+        <select id="repairItem" required>
+          <option value="">Select an item</option>
+          <option value="Core Buggy">Core Buggy</option>
+          <option value="E-Bike">E-Bike</option>
+          <option value="Mountain Bike">Mountain Bike</option>
+          <option value="Platinum Buggy">Platinum Buggy</option>
+          <option value="4X4">4X4</option>
         </select>
-
-        <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" min="1" value="1">
       </div>
-
-      <button type="submit">Submit Repair Log</button>
+      <div class="form-group">
+        <label for="assetID">What is the asset ID?</label>
+        <input type="text" id="assetID" required />
+      </div>
+      <div class="form-group">
+        <label for="repairDetails">What repairs have been done?</label>
+        <input type="text" id="repairDetails" required />
+      </div>
+      <div class="form-group">
+        <label>Did you use any stock?</label>
+        <label><input type="radio" name="stockUsed" value="Yes" required /> Yes</label>
+        <label><input type="radio" name="stockUsed" value="No" required /> No</label>
+      </div>
+      <div id="stockSection" style="display: none;">
+        <h3>Stock Used</h3>
+        <ul id="stockList"></ul>
+        <button type="button" onclick="addStockItem()">Add Stock Item</button>
+      </div>
+      <button type="submit">Submit</button>
     </form>
   </div>
 
   <script>
-    // Simulated inventory data (you would fetch this from a database in a real app)
-    const inventory = {
-      "mountain-bike": [
-        { part: "Mountain Bike Wheel", quantity: 10 },
-        { part: "Mountain Bike Handlebar", quantity: 8 }
-      ],
-      "4x4": [
-        { part: "4x4 Engine Part", quantity: 5 },
-        { part: "4x4 Tires", quantity: 7 }
-      ],
-      "e-bike": [
-        { part: "E-Bike Battery", quantity: 3 },
-        { part: "E-Bike Motor", quantity: 6 }
-      ],
-      "green-buggy": [
-        { part: "Green Buggy Tire", quantity: 12 },
-        { part: "Green Buggy Seat", quantity: 4 }
-      ],
-      "blue-buggy": [
-        { part: "Blue Buggy Engine", quantity: 2 },
-        { part: "Blue Buggy Wheel", quantity: 5 }
-      ]
-    };
+    const stockList = document.getElementById("stockList");
+    const stockSection = document.getElementById("stockSection");
+    let inventoryParts = [];
 
-    // Handle radio buttons for parts usage
-    $('input[name="used-parts"]').change(function() {
-      if ($("#yes").is(":checked")) {
-        $("#parts-section").show();
-        updatePartsDropdown();
-      } else {
-        $("#parts-section").hide();
+    // Fetch inventory items from Google Sheets
+    async function fetchInventory() {
+      try {
+        const response = await fetch("https://sheets.googleapis.com/v4/spreadsheets/1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8/values/Inventory?key=AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo");
+        const data = await response.json();
+        inventoryParts = data.values.slice(1).map(row => row[0]); // Assuming first column contains part names
+      } catch (error) {
+        console.error("Error fetching inventory:", error);
       }
-    });
-
-    // Update the parts dropdown based on the repair type (Q1 answer)
-    $("#repair-type").change(function() {
-      if ($("#yes").is(":checked")) {
-        updatePartsDropdown();
-      }
-    });
-
-    // Function to populate parts dropdown based on selected repair type
-    function updatePartsDropdown() {
-      const selectedRepair = $("#repair-type").val();
-      const partsDropdown = $("#parts");
-
-      partsDropdown.empty(); // Clear existing options
-
-      inventory[selectedRepair].forEach(item => {
-        partsDropdown.append(new Option(item.part, item.part));
-      });
     }
 
-    // Handle form submission
-    $('#repair-form').submit(function(e) {
+    document.querySelector('input[name="stockUsed"]').addEventListener("change", (e) => {
+      stockSection.style.display = e.target.value === "Yes" ? "block" : "none";
+    });
+
+    function addStockItem() {
+      const listItem = document.createElement("li");
+      const options = inventoryParts
+        .map(part => `<option value="${part}">${part}</option>`)
+        .join("");
+      listItem.innerHTML = `
+        <select>
+          <option value="">Select a part</option>
+          ${options}
+          <option value="Not in List">Not in List</option>
+        </select>
+        <input type="number" placeholder="Quantity" min="1" required />
+        <button type="button" onclick="this.parentElement.remove()">Remove</button>
+      `;
+      stockList.appendChild(listItem);
+    }
+
+    document.getElementById("repairForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      
-      const formData = {
-        repairType: $("#repair-type").val(),
-        assetNumber: $("#asset-number").val(),
-        repairDescription: $("#repair-description").val(),
-        usedParts: $("input[name='used-parts']:checked").val() === 'yes',
-        partUsed: $("#parts").val(),
-        quantity: $("#quantity").val()
+
+      const repairData = {
+        repairedItem: document.getElementById("repairItem").value,
+        assetID: document.getElementById("assetID").value,
+        repairDetails: document.getElementById("repairDetails").value,
+        stockUsed: document.querySelector('input[name="stockUsed"]:checked').value,
+        stockItems: Array.from(stockList.children).map((item) => ({
+          part: item.querySelector("select").value,
+          quantity: item.querySelector("input").value,
+        })),
       };
 
-      console.log(formData);  // For testing, you would store this data in a DB
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbxeQ7euXjMfVkd6Kjs7slZo5k-FQNZiY2_wgKgtIg6dFLr_Ig_2Of9_x5vpP8D9lJrq/exec", {
+          method: "POST",
+          body: JSON.stringify(repairData),
+          headers: { "Content-Type": "application/json" },
+        });
 
-      // Save form data to a database and deduct stock (would be done server-side)
-      // Example: You would send this data to your server to store in the database
-      // And deduct parts from the inventory
-
-      // Example server request (to be replaced with actual API call):
-      /*
-      $.ajax({
-        url: 'https://your-server-endpoint.com/save-repair',
-        method: 'POST',
-        data: formData,
-        success: function(response) {
-          alert('Repair Log submitted successfully!');
-        },
-        error: function(error) {
-          alert('Error submitting repair log!');
+        const result = await response.json();
+        if (result.status === "success") {
+          alert(result.message);
+          e.target.reset();
+          stockList.innerHTML = "";
+        } else {
+          throw new Error(result.message);
         }
-      });
-      */
+      } catch (error) {
+        alert(`Failed to submit repair: ${error.message}`);
+      }
     });
+
+    // Populate inventory when the page loads
+    fetchInventory();
   </script>
 </body>
 </html>
