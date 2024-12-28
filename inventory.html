@@ -3,158 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Repairs Form</title>
-  <style>
-    /* Center everything in a box */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .form-container {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      width: 400px;
-    }
-
-    .form-container h2 {
-      margin-top: 0;
-    }
-
-    .form-container label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    .form-container select,
-    .form-container input,
-    .form-container button {
-      width: 100%;
-      margin-top: 5px;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    .form-container button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .form-container button:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <title>Repairs Logger</title>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Repairs Form</h2>
-    <form id="repairForm">
-      <label for="repairItem">What did you repair?</label>
-      <input type="text" id="repairItem" required>
-
-      <label for="assetID">Asset ID</label>
+  <form id="repairForm">
+    <label>
+      Repaired Item:
+      <input type="text" id="repairedItem" required>
+    </label>
+    <label>
+      Asset ID:
       <input type="text" id="assetID" required>
-
-      <label for="repairDetails">Details of the repair</label>
-      <input type="text" id="repairDetails" required>
-
-      <label>Did you use stock?</label>
-      <label><input type="radio" name="stockUsed" value="Yes" required> Yes</label>
-      <label><input type="radio" name="stockUsed" value="No" required> No</label>
-
-      <div id="stockItemsContainer">
-        <label for="partSelect">Select stock items used:</label>
-        <select id="partSelect">
-          <option value="Part A">Part A</option>
-          <option value="Part B">Part B</option>
-          <option value="Part C">Part C</option>
-          <option value="Not in List">Not in List</option>
-        </select>
-
-        <label for="partQuantity">Quantity</label>
-        <input type="number" id="partQuantity" min="1" value="1">
-        <button type="button" id="addPart">Add Part</button>
-      </div>
-
-      <ul id="stockList"></ul>
-
-      <button type="submit">Submit Repair</button>
-    </form>
-  </div>
+    </label>
+    <label>
+      Repair Details:
+      <textarea id="repairDetails" required></textarea>
+    </label>
+    <label>
+      Stock Used:
+      <select id="stockUsed">
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </label>
+    <label>
+      Stock Items (comma-separated):
+      <input type="text" id="stockItems">
+    </label>
+    <button type="submit">Submit</button>
+  </form>
 
   <script>
-    const stockList = document.getElementById("stockList");
-    const addPartButton = document.getElementById("addPart");
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxeQ7euXjMfVkd6Kjs7slZo5k-FQNZiY2_wgKgtIg6dFLr_Ig_2Of9_x5vpP8D9lJrq/exec"; // Replace with your Web App URL
 
-    // Add stock items to the list
-    addPartButton.addEventListener("click", () => {
-      const partSelect = document.getElementById("partSelect");
-      const partQuantity = document.getElementById("partQuantity");
-
-      const selectedPart = partSelect.value;
-      const quantity = partQuantity.value;
-
-      if (selectedPart && quantity) {
-        const li = document.createElement("li");
-        li.textContent = `${selectedPart} - Quantity: ${quantity}`;
-
-        // Add a delete button for each list item
-        const deleteButton = document.createElement("button");
-        deleteButton.textContent = "Remove";
-        deleteButton.style.marginLeft = "10px";
-        deleteButton.onclick = () => li.remove();
-        li.appendChild(deleteButton);
-
-        stockList.appendChild(li);
-        partQuantity.value = 1; // Reset quantity field
-      } else {
-        alert("Please select a part and quantity.");
-      }
-    });
-
-    // Handle form submission
     document.getElementById("repairForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const repairData = {
-        repairedItem: document.getElementById("repairItem").value,
+      const data = {
+        repairedItem: document.getElementById("repairedItem").value,
         assetID: document.getElementById("assetID").value,
         repairDetails: document.getElementById("repairDetails").value,
-        stockUsed: document.querySelector('input[name="stockUsed"]:checked').value,
-        stockItems: Array.from(stockList.children).map((item) => {
-          const text = item.textContent.replace("Remove", "").trim();
-          const [part, quantity] = text.split(" - Quantity: ");
-          return { part, quantity };
-        }),
+        stockUsed: document.getElementById("stockUsed").value,
+        stockItems: document.getElementById("stockItems").value.split(",").map((item) => item.trim()),
       };
 
       try {
-        const response = await fetch("https://script.google.com/macros/s/YOUR_SCRIPT_URL_HERE/exec", {
+        const response = await fetch(scriptURL, {
           method: "POST",
-          body: JSON.stringify(repairData),
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
         });
 
         const result = await response.json();
         if (result.status === "success") {
-          alert(result.message);
-          e.target.reset();
-          stockList.innerHTML = "";
+          alert("Repair logged successfully!");
         } else {
-          throw new Error(result.message);
+          alert("Error: " + result.message);
         }
       } catch (error) {
-        alert(`Failed to submit repair: ${error.message}`);
+        console.error("Error logging repair:", error);
+        alert("Failed to log repair. Check the console for details.");
       }
     });
   </script>
