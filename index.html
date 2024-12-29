@@ -13,71 +13,75 @@
       background-color: #f4f4f4;
     }
 
-    /* Navigation Menu */
+    /* Page Content Container */
+    .container {
+      text-align: center;
+      padding: 30px;
+    }
+
+    /* Header Section */
+    .header-section {
+      margin-bottom: 2rem;
+    }
+
+    .header-section h1 {
+      font-size: 3rem;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .header-section h2 {
+      font-size: 1.5rem;
+      color: #555;
+    }
+
+    /* Floating Navigation Menu */
     nav {
       background-color: white;
       color: black;
-      padding: 1rem 0;
-      text-align: center;
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      display: inline-block;
+      margin-top: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
     }
 
     nav a {
+      display: inline-block;
       color: black;
       text-decoration: none;
-      margin: 0 15px;
+      padding: 10px 15px;
       font-size: 1.2rem;
       font-weight: bold;
+      margin: 0 15px;
     }
 
     nav a:hover {
-      text-decoration: underline;
+      background-color: #007bff;
+      color: white;
     }
 
-    /* Page Container */
-    .container {
+    /* Service Report Section */
+    .service-report {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 80vh;
-      text-align: center;
+      justify-content: space-between;
+      margin-top: 3rem;
+      text-align: left;
     }
 
-    /* Title and Subtitle */
-    h1 {
-      font-size: 3rem;
-      color: #333;
-      margin: 0.5rem 0;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      color: #555;
-      margin-bottom: 2rem;
-    }
-
-    /* Report Section */
-    .report {
+    /* Individual Service Report Section */
+    .report-box {
       background-color: white;
-      width: 80%;
-      max-width: 800px;
+      width: 48%;
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
     }
 
-    .report h3 {
+    .report-box h3 {
       font-size: 1.5rem;
-      color: #007BFF;
+      color: #007bff;
       margin-bottom: 1rem;
-    }
-
-    .report p {
-      font-size: 1.2rem;
-      color: #333;
-      margin: 0;
     }
 
     .table {
@@ -97,53 +101,56 @@
 
     /* Responsive Design */
     @media (max-width: 768px) {
-      h1 {
-        font-size: 2.5rem;
+      .service-report {
+        flex-direction: column;
       }
 
-      h2 {
-        font-size: 1.2rem;
-      }
-
-      .report {
-        width: 90%;
+      .report-box {
+        width: 100%;
+        margin-bottom: 20px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation Menu -->
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="inventory.html">Inventory</a>
-    <a href="repairs.html">Repairs</a>
-  </nav>
-
-  <!-- Main Container -->
+  <!-- Main Content Container -->
   <div class="container">
-    <h1>Monthly Buggy Service Report</h1>
-    <h2>Overview of the monthly service checks</h2>
-
-    <!-- Report Section: Buggies Serviced -->
-    <div class="report">
-      <h3>Buggies Serviced Overview</h3>
-      <p id="percentage-serviced">Percentage of buggies serviced: Loading...</p>
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1>Brian</h1>
+      <h2>Your Ultimate Inventory Management</h2>
     </div>
 
-    <!-- Report Section: Breakdown by Checker -->
-    <div class="report">
-      <h3>Check Breakdown by Checker</h3>
-      <table id="checker-table" class="table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Checked Buggies</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Data will be dynamically populated -->
-        </tbody>
-      </table>
+    <!-- Floating Navigation Menu - Centered -->
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="inventory.html">Inventory</a>
+      <a href="repairs.html">Repair Log</a>
+    </nav>
+
+    <!-- Service Report Section -->
+    <div class="service-report">
+      <!-- Monthly Checks by Person -->
+      <div class="report-box">
+        <h3>Monthly Checks by Person</h3>
+        <table id="checker-table" class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Checked Buggies</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Data will be dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- % of Buggies Completed -->
+      <div class="report-box">
+        <h3>% of Buggies Completed</h3>
+        <p id="percentage-serviced">Percentage of buggies serviced: Loading...</p>
+      </div>
     </div>
   </div>
 
@@ -151,7 +158,7 @@
     async function fetchMonthlyCheckData() {
       const sheetId = "1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8"; // Sheet ID
       const range = "Monthly Checks!A2:C"; // Range for the Monthly Checks sheet (excluding header)
-      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Replace with your actual API Key
+      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Your API Key
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
       try {
