@@ -3,141 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventory Management</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <title>Inventory Page</title>
   <style>
+    /* General Reset */
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #f4f4f4;
     }
-    header {
-      background-color: #333;
-      color: white;
-      padding: 10px;
+
+    /* Navigation Menu */
+    nav {
+      background-color: #ffffff;
+      color: Black;
+      padding: 1rem;
       text-align: center;
     }
-    nav {
-      display: flex;
-      justify-content: center;
-      background-color: #444;
-      padding: 10px;
-    }
+
     nav a {
-      color: white;
-      padding: 10px;
+      color: Black;
       text-decoration: none;
       margin: 0 15px;
-      border-radius: 5px;
+      font-size: 1.2rem;
     }
+
     nav a:hover {
-      background-color: #555;
+      text-decoration: underline;
     }
-    .container {
+
+    /* Page Header */
+    h1 {
+      text-align: center;
+      color: #333;
+      margin: 1rem 0;
+    }
+
+    /* Inventory Section */
+    .category {
+      margin: 1rem auto;
       width: 80%;
-      margin: 30px auto;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .category-header {
+      padding: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #ddd;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
     }
-    .category-table {
+
+    .category-header:hover {
+      background-color: #e9ecef;
+    }
+
+    .category-content {
+      display: none;
+      padding: 1rem;
+    }
+
+    table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin: 1rem 0;
     }
-    .category-table th, .category-table td {
-      border: 1px solid #ddd;
-      padding: 8px;
+
+    th, td {
       text-align: left;
+      padding: 8px;
+      border: 1px solid #ddd;
     }
-    .category-table th {
-      background-color: #333;
+
+    th {
+      background-color: #007BFF;
       color: white;
-    }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-    }
-    @media (max-width: 768px) {
-      nav {
-        flex-direction: column;
-      }
-      .container {
-        width: 95%;
-      }
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>Inventory Management</h1>
-  </header>
-
+  <!-- Navigation Menu -->
   <nav>
-    <a href="#">Home</a>
-    <a href="#">Inventory</a>
-    <a href="#">Repairs</a>
-    <a href="#">Orders</a>
-    <a href="#">Reports</a>
+    <a href="home.html">Home</a>
+    <a href="inventory.html">Inventory</a>
+    <a href="repairs.html">Repairs</a>
   </nav>
 
-  <div class="container">
-    <h2>Category Breakdown</h2>
-    
-    <!-- Inventory Table - Pull from the Google Sheets -->
-    <table class="category-table" id="inventory-table">
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Item Name</th>
-          <th>Quantity</th>
-          <th>Min Stock</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Data will be inserted here by JavaScript -->
-      </tbody>
-    </table>
+  <h1>Inventory</h1>
 
-    <!-- Embedded Google Form for Updates -->
-    <h3>Submit New Repair Details</h3>
-    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdYROD-SRB8Tkr4CqAZJ_3EOqonnVijPlP_dUe-QQuKIVHpKQ/viewform?embedded=true" width="640" height="1408" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
-  </div>
+  <div id="inventory"></div>
 
   <script>
-    // Replace this with your own Google Sheets URL for API access
-    const sheetURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_URL_HERE/exec';
-
-    // Fetch inventory data from the Google Sheets API (example)
     async function fetchInventory() {
+      const sheetId = "1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8"; // Sheet ID
+      const range = "Inventory!A1:C"; // Adjusted range for the inventory sheet
+      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Your API Key
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
       try {
-        const response = await fetch(sheetURL);
+        const response = await fetch(url);
         const data = await response.json();
-        
-        const inventoryTableBody = document.querySelector('#inventory-table tbody');
-        inventoryTableBody.innerHTML = ''; // Clear previous rows
-        
-        data.forEach(item => {
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td>${item.category}</td>
-            <td>${item.itemName}</td>
-            <td>${item.quantity}</td>
-            <td>${item.minStock}</td>
-          `;
-          inventoryTableBody.appendChild(row);
-        });
+
+        if (data.values) {
+          const [headers, ...rows] = data.values; // Separate headers and data rows
+          const categories = {};
+
+          // Group rows by category
+          rows.forEach(row => {
+            const [category, itemName, qty] = row;
+            if (!categories[category]) categories[category] = [];
+            categories[category].push({ itemName, qty });
+          });
+
+          // Render data
+          const inventoryDiv = document.getElementById("inventory");
+          inventoryDiv.innerHTML = Object.keys(categories)
+            .map(category => `
+              <div class="category">
+                <div class="category-header" onclick="toggleCategory(this)">
+                  ${category} <span>+</span>
+                </div>
+                <div class="category-content">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${categories[category]
+                        .map(item => `
+                          <tr>
+                            <td>${item.itemName}</td>
+                            <td>${item.qty}</td>
+                          </tr>
+                        `)
+                        .join("")}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            `)
+            .join("");
+        } else {
+          document.getElementById("inventory").innerHTML = "No inventory data found.";
+        }
       } catch (error) {
-        console.error('Error fetching inventory data:', error);
+        console.error("Error fetching inventory:", error);
+        document.getElementById("inventory").innerHTML = "Error loading inventory data.";
       }
     }
 
-    // Call the function to fetch inventory when the page loads
-    window.onload = fetchInventory;
-  </script>
+    function toggleCategory(header) {
+      const content = header.nextElementSibling;
+      const isVisible = content.style.display === "block";
+      content.style.display = isVisible ? "none" : "block";
+      header.querySelector("span").textContent = isVisible ? "+" : "-";
+    }
 
+    fetchInventory();
+  </script>
 </body>
 </html>
