@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brian - Home</title>
+  <title>Monthly Buggy Service Report</title>
   <style>
     /* General Reset */
     body {
@@ -61,10 +61,11 @@
     .report {
       background-color: white;
       width: 80%;
-      max-width: 600px;
+      max-width: 800px;
       padding: 2rem;
       border-radius: 10px;
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 2rem;
     }
 
     .report h3 {
@@ -77,6 +78,21 @@
       font-size: 1.2rem;
       color: #333;
       margin: 0;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th, .table td {
+      padding: 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .table th {
+      background-color: #f4f4f4;
     }
 
     /* Responsive Design */
@@ -105,21 +121,37 @@
 
   <!-- Main Container -->
   <div class="container">
-    <h1>Brian</h1>
-    <h2>Your ultimate inventory management system</h2>
+    <h1>Monthly Buggy Service Report</h1>
+    <h2>Overview of the monthly service checks</h2>
 
-    <!-- Report Section -->
+    <!-- Report Section: Buggies Serviced -->
     <div class="report">
-      <h3>Inventory Report</h3>
-      <p id="total-items">Total Items in Inventory: Loading...</p>
+      <h3>Buggies Serviced Overview</h3>
+      <p id="percentage-serviced">Percentage of buggies serviced: Loading...</p>
+    </div>
+
+    <!-- Report Section: Breakdown by Checker -->
+    <div class="report">
+      <h3>Check Breakdown by Checker</h3>
+      <table id="checker-table" class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Checked Buggies</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Data will be dynamically populated -->
+        </tbody>
+      </table>
     </div>
   </div>
 
   <script>
-    async function fetchInventoryData() {
+    async function fetchMonthlyCheckData() {
       const sheetId = "1KUrgcWTWvhZcL2Is4zXwp9MJ25HtmHlGxtesnGg_Eo8"; // Sheet ID
-      const range = "Inventory!A1:C"; // Range for the inventory sheet
-      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Your API Key
+      const range = "Monthly Checks!A2:C"; // Range for the Monthly Checks sheet (excluding header)
+      const apiKey = "AIzaSyBd414xIfb6zEP1Uk9NmEvuw2_jwzfp9yo"; // Replace with your actual API Key
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
       try {
@@ -127,18 +159,47 @@
         const data = await response.json();
 
         if (data.values) {
-          const totalItems = data.values.length - 1; // Subtract 1 for the header row
-          document.getElementById("total-items").textContent = `Total Items in Inventory: ${totalItems}`;
+          const totalBuggies = 290; // Total number of buggies
+          const checks = data.values;
+
+          let checkedBuggies = new Set();
+          let checkerCounts = {};
+
+          // Process the data to calculate checked buggies and checker counts
+          checks.forEach(row => {
+            const buggyNumber = row[2]; // Buggy Number is in the third column
+            const checkerName = row[1]; // Name is in the second column
+            if (buggyNumber) {
+              checkedBuggies.add(buggyNumber); // Add to the set of checked buggies
+              checkerCounts[checkerName] = (checkerCounts[checkerName] || 0) + 1; // Count how many buggies each person checked
+            }
+          });
+
+          const servicedCount = checkedBuggies.size; // Number of serviced buggies
+          const servicedPercentage = ((servicedCount / totalBuggies) * 100).toFixed(2);
+
+          // Update the percentage of buggies serviced
+          document.getElementById("percentage-serviced").textContent = `Percentage of buggies serviced: ${servicedPercentage}%`;
+
+          // Update the checker table
+          const checkerTableBody = document.getElementById("checker-table").getElementsByTagName("tbody")[0];
+          for (let checker in checkerCounts) {
+            const row = checkerTableBody.insertRow();
+            const nameCell = row.insertCell(0);
+            const countCell = row.insertCell(1);
+            nameCell.textContent = checker;
+            countCell.textContent = checkerCounts[checker];
+          }
         } else {
-          document.getElementById("total-items").textContent = "Total Items in Inventory: 0";
+          document.getElementById("percentage-serviced").textContent = "No check data available.";
         }
       } catch (error) {
-        console.error("Error fetching inventory data:", error);
-        document.getElementById("total-items").textContent = "Error fetching inventory data.";
+        console.error("Error fetching monthly check data:", error);
+        document.getElementById("percentage-serviced").textContent = "Error fetching monthly check data.";
       }
     }
 
-    fetchInventoryData();
+    fetchMonthlyCheckData();
   </script>
 </body>
 </html>
