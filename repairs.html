@@ -37,14 +37,23 @@
       justify-content: center;
       align-items: center;
       min-height: 80vh;
+      padding: 20px;
     }
 
+    /* Responsive iframe for the embedded Google Form */
     iframe {
       width: 100%;
+      max-width: 900px;
       height: 100%;
-      max-width: 800px;
-      max-height: 1000px;
+      min-height: 1200px; /* Ensure the iframe is tall enough */
       border: none;
+    }
+
+    /* Ensure the page has some spacing around the iframe */
+    @media (max-width: 768px) {
+      iframe {
+        min-height: 1500px; /* Adjust height on smaller screens */
+      }
     }
   </style>
 </head>
